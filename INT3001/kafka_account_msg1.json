@@ -1,0 +1,14 @@
+{
+    "Task": {
+        "Body": {
+            "EqxMdmId": "MSTR10069952Q32"
+        },
+        "Signature": "<customer-signature>",
+        "Version": "1.0",
+        "Status": "New",
+        "CreationTimeInUTC": "2024-04-03T10:46:55.814142646Z",
+        "Id": "cf58a1b1-3d59-42de-8286-fc6066483b30",
+        "Domain": "Account",
+        "Source": "fd1d5000-503b-11e9-a153-515d09941234"
+    }
+}

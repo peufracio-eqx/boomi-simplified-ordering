@@ -1,0 +1,58 @@
+{
+    "operation": "Create",
+    "eqxAccountDetails": {
+        "name": "Fabric_QE_PDSBuyer1-292316",
+        "u_account_number": "292316",
+        "sn_tmt_core_external_id": "AF02DC8A-4BC8-40c7-A8BE-A2C8D63D7FA2",
+        "x_equi2_cust_acct_mdm_id": "OPER1006679207",
+        "u_account_integration_id": "AF02DC8A-4BC8-40c7-A8BE-A2C8D63D7FA2",
+        "x_equi2_cust_acct_active": true,
+        "x_equi2_cust_acct_account_status": "CUSTOMER",
+        "x_equi2_cust_acct_account_category": "BILLING",
+        "x_equi2_cust_acct_region": "EMEA",
+        "x_equi2_cust_acct_country_code": "US",
+        "country": "US",
+        "x_equi2_cust_acct_internal_account": false,
+        "x_equi2_cust_acct_masked_account": false,
+        "x_equi2_cust_acct_federal_flag": false,
+        "x_equi2_cust_acct_government_account": false,
+        "x_equi2_cust_acct_segment": "To Be Assigned",
+        "x_equi2_cust_acct_sub_segment": "To Be Assigned",
+        "x_equi2_cust_acct_sales_account_parent_id": "4F4D8610-7CC2-4b4a-9510-65EFAFC42DAB",
+        "x_equi2_cust_acct_ultimate_sales_account_parent_id": "4F4D8610-7CC2-4b4a-9510-65EFAFC42DAB",
+        "x_equi2_cust_acct_isreseller": false,
+        "x_equi2_cust_acct_issubcustomer": false,
+        "x_equi2_cust_acct_reseller_experience": "",
+        "x_equi2_cust_acct_reseller_id": "",
+        "x_equi2_cust_acct_ispartner": false,
+        "x_equi2_cust_acct_partner_type": "",
+        "x_equi2_cust_acct_partner_sub_type": "",
+        "x_equi2_cust_acct_partner_status": "",
+        "x_equi2_cust_acct_partner_tier": "",
+        "x_equi2_cust_acct_po_bearing": false,
+        "x_equi2_cust_acct_streamlined_flag": false,
+        "x_equi2_cust_acct_notify_billing_contact": false,
+        "x_equi2_cust_acct_credithold": false,
+        "x_equi2_cust_acct_currency_code": "CHF"
+    },
+    "eqxAccountAddress": [
+        {
+            "sn_tmt_core_external_id": "",
+            "street": "1188 E ARQUES AVE",
+            "city": "SUNNYVALE",
+            "country": "US",
+            "zip": "94085-4602",
+            "state": "",
+            "x_equi2_cust_acct_bill_to": "N",
+            "x_equi2_cust_acct_hq": "P"
+        }
+    ],
+    "internalContactDetails": [
+        {
+            "user": "xxxxxx",
+            "responsibility": "ECP User",
+            "x_equi2_cust_acct_start_date_time": "2020-01-01",
+            "x_equi2_cust_acct_end_date_time": "2020-01-30"
+        }
+    ]
+}

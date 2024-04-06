@@ -1,0 +1,20 @@
+{
+    "u_name": "SV4",
+    "u_ibx_display_name": "SV4",
+    "u_ibx_status": "Open",
+    "u_ibx_type": "IBX",
+    "u_local_currency": "USD",
+    "u_location_orientation": "8 mi (13 km) to San Jose Intl Airport (SJC), 28 mi (47 km) to San Francisco Intl Airport (SFO), 35 mi (56 km) to Oakland Intl Airport (OAK)",
+    "u_latitude": "37.414445",
+    "u_longitude": "-122.014646",
+    "u_street": "255 Caspian Drive, Test, Test",
+    "u_city": "Sunnyvale",
+    "u_country": "United States of America",
+    "u_region": "AMER",
+    "u_country_code": "US",
+    "u_zip_or_postal_code": "94089",
+    "u_state_or_province": "California",
+    "u_sub_region": "North America",
+    "u_metro_code": "SV",
+    "u_metro_name": "Silicon Valley"
+}

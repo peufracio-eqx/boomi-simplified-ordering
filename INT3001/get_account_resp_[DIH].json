@@ -1,0 +1,79 @@
+{
+    "pagination": {
+        "offset": 0,
+        "limit": 25,
+        "total": 1
+    },
+    "data": [
+        {
+            "name": "Blue Fringe",
+            "eqxSourceId": "MSTR1006680431",
+            "status": "ACTIVE",
+            "accountType": "CUSTOMER",
+            "eqxAccountInfo": {
+                "accountNumbers": [
+                    "64357367"
+                ],
+                "partyUIds": [
+                    "B4D966B1-63F5-4668-9732-68E5CCB92CC9"
+                ],
+                "category": "Billing",
+                "accountRegion": "EMEA",
+                "mcaCountry": "US",
+                "isInternalAccount": false,
+                "isMaskedAccount": false,
+                "isFederal": false,
+                "isGovernmentAccount": false,
+                "segments": [
+                    "Network"
+                ],
+                "subSegment": "Major Telecom",
+                "salesAccountLegacySourceId": "16803B73-24B1-4c4e-9BB9-CFF71100A13F",
+                "ultimateSalesAccountLegacySourceId": "SOURCE_ID",
+                "isReseller": false,
+                "isSubCustomer": true,
+                "resellerExperience": "old",
+                "resellerUId": "517911",
+                "isPartner": false,
+                "partnerType": "RESELLER",
+                "partnerSubType": "Technology Partner",
+                "partnerStatus": "Established",
+                "partnerTier": "",
+                "isPurchaseOrderRequired": false,
+                "isStreamlined": true,
+                "isBillNotify": false,
+                "currencyCode": "USD"
+            },
+            "eqxAccountCredit": {
+                "creditHoldReason": true
+            },
+            "eqxAccountAddress": [
+                {
+                    "integrationId": "",
+                    "addressLine1": "1 KNIGHTSBRIDGE",
+                    "addressLine2": "Second Floor",
+                    "addressLine3": "1569 Sloat Blvd",
+                    "addressLine4": "Suite 333",
+                    "city": "San Francisco",
+                    "countryCode": "US",
+                    "postalCode": "94115",
+                    "state": "CA",
+                    "eqxBillToAddress": "N",
+                    "eqxHqAddress": "P"
+                }
+            ],
+            "accountRelatedContacts": [
+                {
+                    "contactUCID": "",
+                    "roles": [
+                        {
+                            "role": "",
+                            "eqxStartDate": "",
+                            "eqxEndDate": "1990-01-01"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

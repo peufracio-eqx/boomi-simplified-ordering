@@ -1,0 +1,11 @@
+{
+  "domain": "Account",
+  "status": "Update",
+  "body": {
+    "eqxSourceId": "OPER1006679614",
+    "partyAccountName": "AccountName123",
+    "accountCategory": "CUSTOMER",
+    "externalSystemName": "EBS",
+    "externalSystemId": "12312312312"
+  }
+}

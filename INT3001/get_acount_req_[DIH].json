@@ -1,0 +1,20 @@
+{
+    "search": {
+        "partyAccount": {
+            "eqxSourceId": "OPER112006679200"
+        }
+    },
+    "filter": {
+        "eqxAccountAddress": {
+            "countryCode": "OPER112006679200"
+        }
+    },
+    "pagination": {
+        "offset": 1,
+        "limit": 2
+    },
+    "sort": {
+        "property": "",
+        "direction": ""
+    }
+}

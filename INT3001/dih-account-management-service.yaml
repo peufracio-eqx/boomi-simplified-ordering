@@ -1,0 +1,4363 @@
+openapi: 3.0.3
+info:
+  title: DIH Account Management APIs
+  description: DIH Account Management APIs
+  termsOfService: https://www.equinix.com/about/legal/terms
+  contact:
+    name: Digital Integration Support
+    email: DigitalIntegrationSupport@equinix.com
+  license:
+    name: Equinix Inc
+    url: https://developer.equinix.com/agreement
+  version: v2.0.5
+servers:
+  - url: 'http://{host}:{port}'
+    description: Local Docker Environment
+    variables:
+      host:
+        default: localhost
+        enum:
+          - localhost
+          - 192.168.99.100
+      port:
+        default: '6158'
+        enum:
+          - '6158'
+  - url: '{protocol}://dih{env}.npitaws.equinix.com'
+    description: IT AWS Rancher - Non-Production DNS
+    variables:
+      protocol:
+        default: http
+        enum:
+          - http
+          - https
+      env:
+        default: dev
+        enum:
+          - dev
+          - sit
+          - uat
+          - demo
+          - clone
+          - preprod
+  - url: '{protocol}://{env}api.npclouda.equinix.com'
+    description: Non-Production Apigee
+    variables:
+      protocol:
+        default: http
+        enum:
+          - http
+          - https
+      env:
+        default: di
+        enum:
+          - di
+          - qa
+          - uat
+  - url: '{protocol}://dih.itaws.equinix.com'
+    description: IT AWS Rancher - Production DNS
+    variables:
+      protocol:
+        default: http
+        enum:
+          - http
+          - https
+  - url: '{protocol}://api.clouda.equinix.com'
+    description: Production Apigee
+    variables:
+      protocol:
+        default: http
+        enum:
+          - http
+          - https
+tags:
+  - name: Account
+    description: Equinix Account Connections
+security:
+  - ApiKeyAuth: [ ]
+paths:
+  /dih/v2/billingAccounts:
+    post:
+      tags:
+        - Account
+      summary: Create a new Billing Account in Salesforce
+      description: >-
+        Create a new Billing Account in Salesforce.com.
+      operationId: createBillingAccount
+      parameters:
+        - name: Correlation-Id
+          in: header
+          description: The correlation id.
+          required: true
+          schema:
+            type: string
+            example: '694331071713043331598580757039'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBillingAccountRequest'
+            example:
+              partyAccount:
+                eqxAccountInfo:
+                  currencyCode: 'USD'
+                  classification: 'COLO'
+                  ibx: 'CH1'
+                  salesAccountLegacySourceId: '16803B73-24B1-4c4e-9BB9-CFF71100A13F'
+                billingAccountSpecification:
+                  action: 'Create'
+                  currentUserLegacySourceId: '78A6E6A2-DEF2-49e6-9C8E-1E815639F6F2'
+                  localAccountId: 'Q1789'
+                  memo: 'Premium customer'
+                  opportunityRowId: 'ID1424'
+                  quoteId: '1-2RNCGINB'
+                  quoteNumber: '74567'
+      responses:
+        "201":
+          description: Created
+          headers:
+            Location:
+              schema:
+                type: string
+              description: Salesforce-Id.
+              example: '0016u00000jV9cgAAC'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateResponse'
+              example:
+                status: 'Success'
+                salesforceId: '0016u00000jV9cgAAC'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultError'
+              examples:
+                Invalid List of Value:
+                  value:
+                    errors:
+                      - errorCode: 'EQ-1648025'
+                        errorMessage: >-
+                          Bad request - Value is not within the allowed list of values
+                        correlationId: '694331071713043331598580757199'
+                        details: Value is not within the allowed list of values - Refer to additional info for details
+                        additionalInfo:
+                          - property: partyAccount.eqxAccountInfo.currencyCode
+                            reason: partyAccount.eqxAccountInfo.currencyCode is not within the list of allowed values
+                Missing mandatory field:
+                  value:
+                    errors:
+                      - errorCode: 'EQ-1648011'
+                        errorMessage: >-
+                          Bad request - Mandatory field is missing
+                        correlationId: '694331071713043331598580757199'
+                        details: Mandatory field is missing - Refer to additional info for details
+                        additionalInfo:
+                          - property: partyAccount.eqxAccountInfo.currencyCode
+                            reason: partyAccount.eqxAccountInfo.currencyCode field is missing
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultError'
+              examples:
+                Unauthorized:
+                  value:
+                    errors:
+                      - errorCode: 'EQ-1648001'
+                        errorMessage: 'Unauthorized'
+                        correlationId: '694331071713043331598580757039'
+                        details: 'Not authorize to execute this service'
+                Missing apiKey:
+                  value:
+                    errors:
+                      - errorCode: 'EQ-1648003'
+                        errorMessage: 'Required Access token is missing'
+                        correlationId: '694331071713043331598580757039'
+                        details: 'apiKey is missing'
+                        additionalInfo:
+                          - property: 'apiKey'
+                            reason: 'No apiKey is found. Use a valid apiKey'
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultError'
+              examples:
+                Default:
+                  value:
+                    errors:
+                      - errorCode: 'EQ-1648030'
+                        errorMessage: 'Internal server error - Refer details for more informations'
+                        correlationId: '694331071713043331598580757039'
+                        details: 'Server encountered an unexpected error'
+                Validation Failure:
+                  value:
+                    errors:
+                      - errorCode: 'EQ-1648010'
+                        errorMessage: 'Validation Failure - Refer details for more informations'
+                        correlationId: '694331071713043331598580757039'
+                        details: 'Server encountered an unexpected error'
+  /dih/v2/accounts/search:
+    post:
+      tags:
+        - Account
+      summary: Get Account Details.
+      description: >-
+        Retrieve account details
+      operationId: getAccount
+      parameters:
+        - name: Correlation-Id
+          in: header
+          description: The correlation id.
+          required: true
+          schema:
+            type: string
+            example: '694331071713043331598580757039'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'
+            example:
+              search:
+                partyAccount:
+                  name: 'Al Jazeera'
+                  eqxSourceId: 'OPER1000506013'
+                  eqxOperationalAccountSourceId: 'MSTR10001475960101'
+                  eqxSourceAliasName: 'Al Jazeera International Limited'
+                  systemId: '00180000012qmwPAAQ'
+                accountRelationship:
+                  account: 'Direct'
+                eqxAccountInfo:
+                  globalUltimateDuns: '12024'
+                  partyUId: 'A822E68E-6F79-4507-B9A8-1BA3C4B31904'
+                  resellerUId: '517911'
+                  portalOrganizationId: '32678'
+                  accountNumbers:
+                    - '529528'
+                    - '629528'
+                  eqxPortalReferenceNumber: '7545'
+                  ultimateSalesAccountLegacySourceId: 'CE8638BC-46D5-4bd2-B467-C8DE765AD11A'
+                  resellerUltimateSalesLegacySourceId: 'CE8638BC-46D5-4bd2-B467-C8DE765AD11A'
+                  alias: 'AL JAZEERA MEDIA NETWORK'
+                  localAccountName: 'AL JAZEERA'
+                  dunsNumber: '739826803'
+                  portalOrganizationName: 'AL JAZEERA MEDIA NETWORK'
+                eqxPartyFirmography:
+                  inParentCompanyId: '23589'
+                  inUltimateParentId: '73489'
+                eqxAccountAddress:
+                  addressLine1: '1 KNIGHTSBRIDGE'
+                  addressLine2: 'San Francisco'
+                createdDate: '2020-07-01'
+                updatedDate: '2021-04-01'
+              filter:
+                partyAccount:
+                  accountType: 'PROSPECT'
+                  sourceAccountType: 'OPERATIONAL'
+                  eqxBuyingRelationship: 'DIRECT'
+                eqxAccountInfo:
+                  category: 'BILLING'
+                  partnerType: 'REFERRAL'
+                  accountRegion: 'EMEA'
+                  marketRegion: 'EMEA'
+                eqxAccountAddress:
+                  countryCode: AD
+                additionalInfo:
+                  - property: partyAccount.eqxInfo.dnbNames
+                    values:
+                      - "Adallom, Inc."
+                      - "Helius Technologies"
+                  - property: partyAccount.eqxInfo.parentHqDuns
+                    values:
+                      - '081466849'
+                      - '0757343543'
+              pagination:
+                offset: 0
+                limit: 25
+              sort:
+                property: eqxSourceId
+                direction: ASC
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Accounts'
+              examples:
+                Success:
+                  value:
+                    pagination:
+                      total: 1
+                      offset: 2
+                      limit: 1
+                      next: '3'
+                      previous: '1'
+                    data:
+                      - externalSystemIds:
+                          - systemName: 'SFDC'
+                            systemId: '00180000012qmwPAAQ'
+                          - systemName: 'SBL'
+                            systemId: '3786879'
+                        additionalInfoAttributes:
+                          - property: 'name'
+                            value: 'AL JAZEERA'
+                        sourceAccountType: 'OPERATIONAL'
+                        accountType: 'PROSPECT'
+                        creditLimit: '1000'
+                        description: 'AL JAZEERA MEDIA NETWORK'
+                        id: 'I0001'
+                        createdDateTime: '2021-11-19T03:54:58.038Z'
+                        lastModifiedDateTime: '2022-10-07T10:35:07.554Z'
+                        name: 'Al Jazeera'
+                        status: 'ACTIVE'
+                        defaultPaymentMethod: 'DIRECT DEBIT'
+                        isEqxProspectAccount: true
+                        eqxSourceId: 'OPER1000506013'
+                        eqxMasterAccountId: 'MSTR10001475960101'
+                        eqxOperationalAccountSourceId: 'OPER1000506013'
+                        eqxPartyStage: 'Prospect'
+                        eqxBuyingRelationships:
+                          - 'DIRECT'
+                          - 'INDIRECT'
+                        eqxSourceAliasName: 'Al Jazeera International Limited'
+                        isEqxSubDivision: true
+                        accountRelationship:
+                          validFor: '30'
+                          accounts:
+                            - '88168'
+                          accountReference:
+                            description: 'AL JAZEERA MEDIA NETWORK'
+                            id: 'MSTR1000506013'
+                            name: 'Al Jazeera'
+                            accountBalance: '500'
+                        paymentPlan:
+                          numberOfPayments: 1
+                          paymentTerms: 'Net 30'
+                          paymentFrequency: 'monthly'
+                          priority: 'Priority'
+                          state: 'INEFFECTIVE'
+                          totalAmount: '100'
+                          validFor: '30'
+                          paymentMethod: 'direct debit'
+                        paymentMethodReference:
+                          id: 'I0001'
+                          name: 'Online'
+                        accountBalance:
+                          - amount: '100'
+                            validFor: '30'
+                        accountTaxExemption:
+                          - certificateNumber: '3333'
+                            issuingJurisdiction: 'Federal'
+                            reason: 'StateTax'
+                            validFor: '60'
+                        billStructure:
+                          presentationMedia: 'Al-Jazeera'
+                          format: 'PDF'
+                          billFormatReferenceOrValues:
+                            - vatRegistrationNumber: 'GB9004326758'
+                              description: 'PDF'
+                              id: '10001'
+                              name: 'Al-Jazeera'
+                          billingCycleSpecification:
+                            accountChargeDueDetails:
+                              - accountNumber: '529528'
+                                chargesDue: '3119.96'
+                                currencyCode: 'USD'
+                            billingDateShiftDateTime: '2020-07-01T00:00:00.00Z'
+                            isPower: true
+                            cycle: '1'
+                            method: 'Advance'
+                            billingPeriod: 'month'
+                            chargeOffSet: '15'
+                            creditOffSet: '10'
+                            shift: '15'
+                            description: 'PDF'
+                            frequency: 'Monthly'
+                            id: '12341'
+                            mailingOffset: '15'
+                            name: 'Al-Jazeera'
+                            paymentDueOffset: '15'
+                            validFor: '10'
+                          billPresentationMediaReferenceOrValues:
+                            - description: 'Bill presentation media'
+                              id: '19202'
+                              name: 'Al-Jazeera'
+                        eqxAccountInfo:
+                          domesticUltimateDuns: '12024'
+                          globalUltimateDuns: '12024'
+                          purchaseOrderDetails:
+                            purchaseOrderMaximumCharacterLimit: '100'
+                            purchaseOrderMinimumCharacterLimit: '10'
+                            purchaseOrderTrackingType: 'None'
+                            isPurchaseOrderExempted: false
+                            isPurchaseOrderRequired: true
+                            isAllNonRecurringCharges: true
+                            isAllRecurringCharges: true
+                            isSmartHands: true
+                            isPurchaseOrderSpace: true
+                            isAllServices: true
+                            isAllZeroValueService: true
+                            isPurchaseOrderNetwork: true
+                            isPurchaseOrderPower: true
+                            isProfessionalServices: true
+                          billingIndicator: 'Global'
+                          accountCustomerAlias: 'Al Jazeera International Limited'
+                          resellerUltimateSalesLegacySourceId: '7B0A42FB-EF76-4f5c-B53B-61B437E9AE11'
+                          isPublishCustomerName: true
+                          isBillable: false
+                          isSubCustomer: false
+                          isSubCustomerBilling: false
+                          purchaseOrderFormatRestricted: '1'
+                          isGovernmentAccount: false
+                          id: '1001'
+                          modId: '12024'
+                          accountRegion: 'EMEA'
+                          currencyCode: 'GBP'
+                          dunsNumber: '739826803'
+                          currentVolume: '10'
+                          doingBusinessAs: 'Manager'
+                          federalTaxNumber: '12-609405112'
+                          mainFaxNumber: '15-833-2000'
+                          phone: '020 7201 2800'
+                          noOfEmployees: '100'
+                          groupTypCode: '1231'
+                          vatRegistrationNumber: 'GB9004326758'
+                          operatingUnit: 'EQUINIX - US'
+                          partnerStatus: 'Established'
+                          sic1Code: '1469'
+                          sic2Code: '511210'
+                          sic3Code: '66.200'
+                          sic4Code: '64.200'
+                          sic1CodeDescription: 'Television Broadcasting'
+                          sic2CodeDescription: 'Regional Broadcasting'
+                          sic3CodeDescription: 'Telecommunications Infrastructure'
+                          sic4CodeDescription: 'Telecommunications service for business'
+                          insuranceNumber: '189282'
+                          yearStarted: '2004'
+                          isFederal: true
+                          npsScore: '1131'
+                          churnRisk: '133'
+                          alias:
+                            - 'AL JAZEERA MEDIA NETWORK'
+                          dontCall: 'Required'
+                          partyUIds:
+                            - 'A822E68E-6F79-4507-B9A8-1BA3C4B31904'
+                          stateEntityRegistrationCode: '155124'
+                          cityEntityRegistrationCode: '124515'
+                          nationalEntityRegistrationCode: '1255124'
+                          countyEntityRegistrationCode: '6754'
+                          segments:
+                            - 'Content & Digital Media'
+                          segmentApplication: 'To Be Assigned'
+                          subSegment: 'Broadcast & Streaming Media'
+                          partnerMarketSegment: 'Broadcast'
+                          updatedBy: 'admin'
+                          isReseller: true
+                          resellerUId: '517911'
+                          marketRegion: 'EMEA'
+                          contractSignedDateTime: '2020-07-01T00:00:00.00Z'
+                          contractEndDateTime: '2020-07-01T00:00:00.00Z'
+                          partnerType: 'REFERRAL'
+                          partnerSubType: 'Technology Partner'
+                          classification: 'Co-location'
+                          category: 'BILLING'
+                          operation: '1'
+                          homePage: 'www.aljazeera.com'
+                          integrationId: '1245122'
+                          customerFunctionalCurrency: 'USD'
+                          customerSupportLevel: 'PLATINUM'
+                          esdRouting: 'Routing L3'
+                          economicCurrency: 'USD'
+                          exchangeName: 'EQX1000002546'
+                          isIntellectualPropertyRight: true
+                          eqxInvoiceDeliveryMethod: 'Email'
+                          invoiceFormat: 'PDF'
+                          invoiceGroupBy: 'IBX'
+                          invoiceSplitBy: 'None'
+                          invoiceLevel: 'Summary'
+                          keyAccount: '23532'
+                          legalStatus: 'GAM (3)'
+                          legalStructureCode: 'Corporation'
+                          marketingPreScreenScore: '100'
+                          isMarketPlace: true
+                          nonMarketableCompany: 'Insufficient Data'
+                          portalOrganizationIds:
+                            - '32678'
+                          portalOrganizationName: 'AL JAZEERA MEDIA NETWORK'
+                          preferredDocumentLanguage: 'English'
+                          isPressRelease: true
+                          isPriceListing: true
+                          rank: 'Fortune'
+                          specialHandlingNotes: 'Note'
+                          statementDeliveryMethod: 'Email'
+                          subsidiaryIndicator: '23'
+                          substantialPartyCurrency: 'USD'
+                          marketValue: '325623'
+                          smartHandsBillingIncrement: '15'
+                          accountAlumniDateTime: '2020-07-01T00:00:00.00Z'
+                          marketValueDateTime: '2020-02-07T00:00:00Z'
+                          isGamAccount: true
+                          isCustomerLocationConfidential: true
+                          isSignatureRequired: true
+                          accountNumbers:
+                            - '529528'
+                          legalStructureDescription: 'LLC Limited liability company'
+                          isGsa: true
+                          lastYearSales: '1212'
+                          domesticUltimateBusinessName: 'AL JAZEERA GLOBAL HUBCO LIMITED'
+                          employeeTotal: '128'
+                          firstExecutiveFirstName: 'al'
+                          firstExecutiveLastName: 'jazeera'
+                          firstExecutiveMRC: 'Head'
+                          firstExecutiveSuffix: 'Mr'
+                          firstExecutivePrefix: 'I'
+                          firstExecutiveTitle: 'Founder'
+                          globalUltimateBusinessName: 'AL JAZEERA GLOBAL HUBCO LIMITED'
+                          lineOfBusiness: 'Television broadcasting stations, nsk'
+                          majorIndustryCategory: 'Billing'
+                          secondExecutiveFirstName: 'al'
+                          secondExecutiveLastName: 'jazeera'
+                          secondExecutiveMRC: 'Manager'
+                          secondExecutiveMiddleInitial: 'A. R.'
+                          secondExecutivePrefix: 'Mr'
+                          secondExecutiveSuffix: 'III'
+                          secondExecutiveTitle: 'President and CEO'
+                          thirdExecutiveFirstName: 'Jill'
+                          thirdExecutiveLastName: 'Short'
+                          thirdExecutiveMRC: 'Chief Executive Officer'
+                          thirdExecutiveMiddleInitial: 'Merle'
+                          thirdExecutivePrefix: 'Mr'
+                          thirdExecutiveSuffix: 'Jr.'
+                          thirdExecutiveTitle: 'Manager'
+                          firstExecutiveMiddleInitial: 'N'
+                          parentHqDunsName: 'AL JAZEERA GLOBAL HUBCO LIMITED'
+                          dnbMatchCount: '100'
+                          dnbName: 'AL JAZEERA INTERNATIONAL LIMITED'
+                          ownershipType: 'owned'
+                          marketValueCurrency: 'USD'
+                          marketValueUnits: '10'
+                          stockExchangeTickerName: 'AL JAZEERA'
+                          stockExchangeCountryISOCode: '1'
+                          rankType: '1'
+                          isInternalAccount: true
+                          publishSystem: 'Telecommunication'
+                          businessPartnerReference: '1244'
+                          uniqueAlias: 'AL JAZEERA'
+                          regionServed: 'Asia'
+                          targetVerticalMarkets: 'Enterprise'
+                          targetCustomerSize: '50'
+                          eqxPortalReferenceNumber: '7545'
+                          ibx: 'CH1'
+                          isBillNotify: true
+                          resellerExperience: 'old'
+                          dnbStreetAddressLine: '1 Knightsbridge'
+                          dnbPrimaryTownName: 'San Francisco'
+                          dnbCountryISOAlpha2Code: 'CA'
+                          dnbTerritoryAbbreviatedName: 'CA'
+                          dnbPostalCode: '94115'
+                          legacyAccountNumber: '941151134'
+                          localAccountName: 'AL JAZEERA'
+                          novationStatus: 'Novated'
+                          novationDateTime: '2020-07-01T00:00:00.00Z'
+                          extendedReferenceSource: 'Alog'
+                          extendedSourceReferenceId: '1311'
+                          isGsaDetails: true
+                          isDelete: true
+                          isChurnIndicator: true
+                          territory: 'GAM'
+                          deInstallFees: '100'
+                          expediteFees: '100'
+                          installationFees: '100'
+                          terminationFee: '100'
+                          allFutureOrders: 'Noted'
+                          localAccountIdentifier: 'Brazil'
+                          esdClassification: 'Managed Services Only'
+                          companyGroupName: 'Network'
+                          isVd: true
+                          isLeasePerAccounting: true
+                          isMaskedAccount: true
+                          suppressCharges: '15'
+                          salesAccountLegacySourceId: '16803B73-24B1-4c4e-9BB9-CFF71100A13F'
+                          globalAccountTag: 'Accenture'
+                          memo: 'TEST MEMO 1397'
+                          isInterCompany: true
+                          isStreamlined: true
+                          competitor: 'Network'
+                          clientServicesManagerLegacySourceId: '9019'
+                          commercialSolutionsLegacySourceId: '900'
+                          countyCode: 'GB'
+                          operatingUnitIbx: 'CH1'
+                          primarySalesRepLegacySourceId: '1298303'
+                          salesSupportAssociateLegacySourceId: '38401'
+                          source: 'SFDC'
+                          ultimateParentLegacySourceId: '4823'
+                          isPublicListing: true
+                          accountFirstBecameCustomer: '2020-07-01'
+                        eqxAccountCredit:
+                          creditClassification: 'Low Risk'
+                          creditHoldReason: 'NO IBX ACCESS-NO EQUIP REMOVAL'
+                          creditLimitCurrency: 'USD'
+                          creditLimitTolerance: '0'
+                          isCreditMemoDelivery: true
+                          creditRating: '1'
+                          creditLimit: '1.46'
+                        eqxAccountRevenue:
+                          revenueCurrency: 'USD'
+                          revenueUnits: 'SingleUnits'
+                          revenueType: 'USD'
+                          turnOverGrowthRate: '12'
+                          priorityGrowthRate: '11'
+                          revenueValue: '40018756'
+                        eqxAccountAddress:
+                          - modId: 'Al-Jazeera'
+                            addressId: '1101'
+                            integrationId: '2101'
+                            addressType: 'MAIN_ADDR'
+                            addressLine1: '1 KNIGHTSBRIDGE'
+                            addressLine2: 'Second Floor'
+                            addressLine3: '1569 Sloat Blvd'
+                            addressLine4: 'Suite 333'
+                            city: 'San Francisco'
+                            state: 'CA'
+                            postalCode: '94115'
+                            county: 'Riverside County'
+                            province: ' '
+                            country: 'USA'
+                            countryCode: 'US'
+                            startDateTime: '2020-07-01T00:00:00.00Z'
+                            endDateTime: '2020-07-01T00:00:00.00Z'
+                            latitude: '-33.8568'
+                            longitude: '151.2153'
+                            aiaLegacySourceIntegrationId: '785632'
+                            eqxCountyCode: '06037'
+                            eqxLocalApartmentNumber: '23'
+                            eqxHqAddress: 'P'
+                            eqxBillToAddress: 'N'
+                            eqxLegalNotice: 'N'
+                            eqxShipToAddress: 'N'
+                            eqxSoldToAddress: 'N'
+                            verifiedStatus: 'Active'
+                            businessAddressEndDateTime: '2020-07-01T00:00:00.00Z'
+                        eqxPartyFirmography:
+                          domesticUltimateDunsPostalCode: '94115'
+                          domesticUltimateDunsAddressLine: '1 KNIGHTS BRIDGE'
+                          domesticUltimateDunsState: 'CALIFORNIA'
+                          domesticUltimateDunsCity: 'SAN FRANCISCO'
+                          domesticUltimateDunsCountryCode: 'US'
+                          globalUltimateDunsPostalCode: '94115'
+                          globalUltimateDunsAddressLine: '1 KNIGHTS BRIDGE'
+                          globalUltimateDunsState: 'CALIFORNIA'
+                          globalUltimateDunsCity: 'SAN FRANCISCO'
+                          globalUltimateDunsCountryCode: 'US'
+                          isGlobalUltimate: true
+                          isDomesticUltimate: false
+                          isBranchDivision: true
+                          isSubsidiary: false
+                          annualRevenueNonUsd: '16000000'
+                          insideViewId: '211678'
+                          inUltimateParentId: '1101'
+                          inParentCompanyId: '2101'
+                          inEnrichTime: '2003'
+                          inIndustry: 'Corporate Services'
+                          inIndustryCode: 'Network'
+                          inCompanyTaxId: 'HAUBUN5678'
+                          inCompanyStatus: 'Operating'
+                          isAgent: false
+                          bankName: 'JP Morgan'
+                          county: 'Riverside County'
+                          isDunsSelfRequested: false
+                          isExporter: false
+                          isImporter: true
+                          isRegisteredAddress: false
+                          isSmallBusinessIndicator: true
+                          isStandAlone: true
+                          isPhoneDisconnected: false
+                          phoneIsdCode: '080'
+                          britishSicCode: '62012'
+                          britishSicDescription: 'Business and domestic software development'
+                          inParentOwnership: 'Privately owned'
+                          inParentSIC: '1119'
+                          hqDuns: 'PS001'
+                          hqDunsCountryCode: 'US'
+                          hqDunsPostalCode: '94115'
+                          hqDunsAddressLine: '201 California Street, San Francisco, CA 94111'
+                          hqDunsState: 'CALIFORNIA'
+                          hqDunsCity: 'SAN FRANCISCO'
+                          isParentHq: false
+                          mailingCountryName: 'United States'
+                          mailingCountryCode: 'US'
+                          mailingZip: '94115'
+                          mailingAddressLine1: '201 California Street'
+                          mailingAddressLine2: 'San Francisco, CA 94111'
+                          mailingStateCode: '94115'
+                          mailingState: 'CALIFORNIA'
+                          mailingCity: 'SAN FRANCISCO'
+                          parentCountry: 'United States'
+                          parentZip: '94115'
+                          parentAddressLine: '201 California Street, San Francisco, CA 94111'
+                          parentState: 'CALIFORNIA'
+                          parentCity: 'SAN FRANCISCO'
+                          blogUrl: 'http://www.al-corporation.com/blog/feed/'
+                          facebookUrl: 'https://www.facebook.com/company/al-corporation'
+                          linkedinUrl: 'https://www.linkedin.com/company/al-corporation'
+                          twitterUrl: 'https://www.twitter.com/company/al-corporation'
+                          companySource: 'Web References'
+                          companyDescription: 'Broadcasting'
+                          equifaxId: '3454'
+                          employeeRange: '128'
+                          revenueRange: '10 Million'
+                          subIndustry: 'Mobile Application Developers'
+                          subIndustryCode: '1232'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultError'
+              examples:
+                Invalid List of Value:
+                  value:
+                    errors:
+                      - errorCode: 'EQ-1648025'
+                        errorMessage: >-
+                          Bad request - Value is not within the allowed list of values
+                        correlationId: '694331071713043331598580757199'
+                        details: Value is not within the allowed list of values - Refer to additional info for details
+                        additionalInfo:
+                          - property: sort.property
+                            reason: Valid values are eqxSourceId
+                          - property: sort.direction
+                            reason: Valid values are ASC or DESC
+                Missing mandatory field:
+                  value:
+                    errors:
+                      - errorCode: 'EQ-1648011'
+                        errorMessage: >-
+                          Bad request - Mandatory field is missing
+                        correlationId: '694331071713043331598580757199'
+                        details: Mandatory field is missing - Refer to additional info for details
+                        additionalInfo:
+                          - property: search
+                            reason: search field is missing
+                Invalid offset:
+                  value:
+                    errors:
+                      - errorCode: 'EQ-1648024'
+                        errorMessage: >-
+                          Bad request - Value is not within the valid range
+                        correlationId: '694331071713043331598580757199'
+                        details: Value is not within the valid range - Refer to additional info for details
+                        additionalInfo:
+                          - property: pagination.offset
+                            reason: Pagination offset can not less then 0
+                Invalid limit:
+                  value:
+                    errors:
+                      - errorCode: 'EQ-1648024'
+                        errorMessage: >-
+                          Bad request - Value is not within the valid range
+                        correlationId: '694331071713043331598580757199'
+                        details: Value is not within the valid range - Refer to additional info for details
+                        additionalInfo:
+                          - property: pagination.limit
+                            reason: Pagination limit can not be 0 or negative number
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultError'
+              examples:
+                Unauthorized:
+                  value:
+                    errors:
+                      - errorCode: 'EQ-1648001'
+                        errorMessage: 'Unauthorized'
+                        correlationId: '694331071713043331598580757039'
+                        details: 'Not authorize to execute this service'
+                Missing apiKey:
+                  value:
+                    errors:
+                      - errorCode: 'EQ-1648003'
+                        errorMessage: 'Required Access token is missing'
+                        correlationId: '694331071713043331598580757039'
+                        details: 'apiKey is missing'
+                        additionalInfo:
+                          - property: 'apiKey'
+                            reason: 'No apiKey is found. Use a valid apiKey'
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultError'
+              examples:
+                Default:
+                  value:
+                    errors:
+                      - errorCode: 'EQ-1648030'
+                        errorMessage: 'Internal server error - Refer details for more informations'
+                        correlationId: '694331071713043331598580757039'
+                        details: 'Server encountered an unexpected error'
+                Validation Failure:
+                  value:
+                    errors:
+                      - errorCode: 'EQ-1648010'
+                        errorMessage: 'Validation Failure - Refer details for more informations'
+                        correlationId: '694331071713043331598580757039'
+                        details: 'Server encountered an unexpected error'
+  /dih/v2/accounts:
+    post:
+      tags:
+        - Account
+      summary: Create Account.
+      description: >-
+        Create account in Source system with details from consumer.
+      operationId: createAccount
+      parameters:
+        - name: Correlation-Id
+          in: header
+          description: The correlation id.
+          required: true
+          schema:
+            type: string
+          example: '694331071713043331598580757039'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartyAccountCreateRequest'
+            example:
+              accountType: 'PROSPECT'
+              id: 'I0001'
+              createdDateTime: '2021-11-19T03:54:58.038Z'
+              lastModifiedDateTime: '2022-10-07T10:35:07.554Z'
+              name: 'Al Jazeera'
+              status: 'ACTIVE'
+              defaultPaymentMethod: 'DIRECT DEBIT'
+              isEqxProspectAccount: true
+              eqxPartyStage: 'Prospect'
+              eqxBuyingRelationship: DIRECT
+              eqxSourceAliasName: 'Al Jazeera International Limited'
+              additionalInfoAttributes:
+                - property: 'name'
+                  value: 'AL JAZEERA'
+              eqxAccountInfo:
+                isMaskedAccount: false
+                partyType: CUSTOMER
+                accountCustomerAlias: 'Al Jazeera International Limited'
+                isPublishCustomerName: true
+                id: '1001'
+                modId: '12024'
+                accountRegion: EMEA
+                currencyCode: GBP
+                doingBusinessAs: 'Manager'
+                mainFaxNumber: '15-833-2000'
+                phone: '020 7201 2800'
+                operatingUnit: 'EQUINIX - US'
+                partnerStatus: 'Established'
+                sic1Code: '1469'
+                sic2Code: '511210'
+                sic3Code: '66.200'
+                sic4Code: '64.200'
+                sic1CodeDescription: 'Television Broadcasting'
+                sic2CodeDescription: 'Regional Broadcasting'
+                sic3CodeDescription: 'Telecommunications Infrastructure'
+                sic4CodeDescription: 'Telecommunications service for business'
+                yearStarted: '2004'
+                isFederal: true
+                alias:
+                  - 'AL JAZEERA MEDIA NETWORK'
+                segment: 'Content & Digital Media'
+                segmentApplication: 'To Be Assigned'
+                subSegment: 'Broadcast & Streaming Media'
+                partnerMarketSegment: 'Broadcast'
+                updatedBy: 'admin'
+                marketRegion: 'EMEA'
+                partnerSubType: 'Technology Partner'
+                classification: 'Co-location'
+                category: 'Billing'
+                eqxInvoiceDeliveryMethod: 'Email'
+                majorIndustryCategory: 'Billing'
+                isInternalAccount: true
+                ibx: 'CH1'
+                localAccountName: 'AL JAZEERA'
+                salesAccountLegacySourceId: '16803B73-24B1-4c4e-9BB9-CFF71100A13F'
+                source: 'SFDC'
+                ultimateParentLegacySourceId: '4823'
+              eqxAccountAddresses:
+                - modId: 'Al-Jazeera'
+                  addressId: '1101'
+                  integrationId: '2101'
+                  addressType: 'MAIN_ADDR'
+                  addressLine1: '1 KNIGHTSBRIDGE'
+                  addressLine2: 'Second Floor'
+                  addressLine3: '1569 Sloat Blvd'
+                  addressLine4: 'Suite 333'
+                  city: 'San Francisco'
+                  state: 'CA'
+                  postalCode: '94115'
+                  county: 'Riverside County'
+                  province: ''
+                  country: 'USA'
+                  countryCode: US
+                  startDateTime: '2024-07-01T00:00:00.00Z'
+                  endDateTime: '2026-07-01T00:00:00.00Z'
+                  latitude: '-33.8568'
+                  longitude: '151.2153'
+                  aiaLegacySourceIntegrationId: '785632'
+                  eqxCountyCode: '06037'
+                  eqxLocalApartmentNumber: '23'
+                  eqxHqAddress: 'P'
+                  eqxBillToAddress: 'N'
+                  eqxLegalNotice: 'N'
+                  eqxShipToAddress: 'N'
+                  eqxSoldToAddress: 'N'
+                  verifiedStatus: 'Active'
+                  businessAddressEndDateTime: '2020-07-01T00:00:00.00Z'
+              eqxPartyFirmography:
+                domesticUltimateDunsPostalCode: '94115'
+                domesticUltimateDunsAddressLine: '1 KNIGHTS BRIDGE'
+                domesticUltimateDunsState: 'CALIFORNIA'
+                domesticUltimateDunsCity: 'SAN FRANCISCO'
+                domesticUltimateDunsCountryCode: 'US'
+                globalUltimateDunsPostalCode: '94115'
+                globalUltimateDunsAddressLine: '1 KNIGHTS BRIDGE'
+                globalUltimateDunsState: 'CALIFORNIA'
+                globalUltimateDunsCity: 'SAN FRANCISCO'
+                globalUltimateDunsCountryCode: 'US'
+                isGlobalUltimate: true
+                isDomesticUltimate: false
+                isBranchDivision: true
+                isSubsidiary: false
+                annualRevenueNonUsd: '16000000'
+                insideViewId: '211678'
+                inUltimateParentId: '1101'
+                inParentCompanyId: '2101'
+                inEnrichTime: '2003'
+                inIndustry: 'Corporate Services'
+                inIndustryCode: 'Network'
+                inCompanyTaxId: 'HAUBUN5678'
+                inCompanyStatus: 'Operating'
+                isAgent: false
+                bankName: 'JP Morgan'
+                county: 'Riverside County'
+                isDunsSelfRequested: false
+                isExporter: false
+                isImporter: true
+                isRegisteredAddress: false
+                isSmallBusinessIndicator: true
+                isStandAlone: true
+                isPhoneDisconnected: false
+                phoneIsdCode: '080'
+                britishSicCode: '62012'
+                britishSicDescription: 'Business and domestic software development'
+                inParentOwnership: 'Privately owned'
+                inParentSIC: '1119'
+                hqDuns: 'PS001'
+                hqDunsCountryCode: 'US'
+                hqDunsPostalCode: '94115'
+                hqDunsAddressLine: '201 California Street, San Francisco, CA 94111'
+                hqDunsState: 'CALIFORNIA'
+                hqDunsCity: 'SAN FRANCISCO'
+                isParentHq: false
+                mailingCountryName: 'United States'
+                mailingCountryCode: 'US'
+                mailingZip: '94115'
+                mailingAddressLine1: '201 California Street'
+                mailingAddressLine2: 'San Francisco, CA 94111'
+                mailingStateCode: '94115'
+                mailingState: 'CALIFORNIA'
+                mailingCity: 'SAN FRANCISCO'
+                parentCountry: 'United States'
+                parentZip: '94115'
+                parentAddressLine: '201 California Street, San Francisco, CA 94111'
+                parentState: 'CALIFORNIA'
+                parentCity: 'SAN FRANCISCO'
+                blogUrl: 'http://www.al-corporation.com/blog/feed/'
+                facebookUrl: 'https://www.facebook.com/company/al-corporation'
+                linkedinUrl: 'https://www.linkedin.com/company/al-corporation'
+                twitterUrl: 'https://www.twitter.com/company/al-corporation'
+                companySource: 'Web References'
+                companyDescription: 'Broadcasting'
+                equifaxId: '3454'
+                employeeRange: '128'
+                revenueRange: '10 Million'
+                subIndustry: 'Mobile Application Developers'
+                subIndustryCode: '1232'
+      responses:
+        "202":
+          description: ACCEPTED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountCreationResponse'
+              examples:
+                Success:
+                  value:
+                    source: 'SFDC'
+                    sourceId: 'I0001'
+                    status: 'ACCEPTED'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultError'
+              examples:
+                Missing Mandatory Field:
+                  value:
+                    errors:
+                      - errorCode: 'EQ-1648011'
+                        errorMessage: >-
+                          Bad request - Mandatory field is missing
+                        correlationId: '694331071713043331598580757199'
+                        details: Mandatory field is missing - Refer to additional info for details
+                        additionalInfo:
+                          - property: 'id'
+                            reason: 'id field is missing'
+                          - property: 'source'
+                            reason: 'source field is missing'
+                          - property: 'name'
+                            reason: 'name field is missing'
+                          - property: 'category'
+                            reason: 'category field is missing'
+                Invalid List of Value:
+                  value:
+                    errors:
+                      - errorCode: 'EQ-1648025'
+                        errorMessage: >-
+                          Bad request - Value is not within the allowed list of values
+                        correlationId: '694331071713043331598580757039'
+                        details: Value is not within the allowed list of values - Refer to additional info for details
+                        additionalInfo:
+                          - property: 'accountType'
+                            reason: 'Valid values are: CUSTOMER, PROSPECT, ALUMNI and PENDING ALUMNI'
+                          - property: 'countryCode'
+                            reason: 'Valid values are: AD, AE, and ZW etc'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultError'
+              examples:
+                Unauthorized:
+                  value:
+                    errors:
+                      - errorCode: 'EQ-1648001'
+                        errorMessage: 'Unauthorized'
+                        correlationId: '694331071713043331598580757039'
+                        details: 'Not authorize to execute this service'
+                Missing apiKey:
+                  value:
+                    errors:
+                      - errorCode: 'EQ-1648003'
+                        errorMessage: 'Required Access token is missing'
+                        correlationId: '694331071713043331598580757039'
+                        details: 'apiKey is missing'
+                        additionalInfo:
+                          - property: 'apiKey'
+                            reason: 'No apiKey is found. Use a valid apiKey'
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultError'
+              examples:
+                Default:
+                  value:
+                    errors:
+                      - errorCode: 'EQ-1648030'
+                        errorMessage: 'Internal server error - Refer details for more informations'
+                        correlationId: '694331071713043331598580757039'
+                        details: '<Details error message>'
+                Validation Failure:
+                  value:
+                    errors:
+                      - errorCode: 'EQ-1648010'
+                        errorMessage: 'Validation Failure - Refer details for more informations'
+                        correlationId: '694331071713043331598580757039'
+                        details: 'Server encountered an unexpected error'
+components:
+  schemas:
+    PartnerType:
+      type: string
+      description: Partner types
+      enum:
+        - REFERRAL
+        - RESELLER
+        - AGENT
+    CreateBillingAccountRequest:
+      type: object
+      description: Create account request for Salesforce
+      properties:
+        partyAccount:
+          $ref: '#/components/schemas/CreateBillingPartyAccount'
+    CreateBillingPartyAccount:
+      type: object
+      description: Account used for billing or for settlement purposes concerning a given party (an organization or an individual). It is a specialization of entity Account.
+      properties:
+        eqxAccountInfo:
+          $ref: '#/components/schemas/CreateEqxAccountInfo'
+        billingAccountSpecification:
+          $ref: '#/components/schemas/CreateBillingAccountSpecification'
+    CreateEqxAccountInfo:
+      type: object
+      description: Extended Account Entity to accommodate additional Equinix specific fields in Salesforce.
+      required:
+        - currencyCode
+        - ibx
+        - salesAccountLegacySourceId
+      properties:
+        currencyCode:
+          $ref: '#/components/schemas/CurrencyCodes'
+        classification:
+          type: string
+          description: classification of account
+          example: 'COLO'
+        ibx:
+          type: string
+          description: The IBX for the first asset
+          example: 'CH1'
+        salesAccountLegacySourceId:
+          type: string
+          description: UCM ID of Sales Account
+          example: '16803B73-24B1-4c4e-9BB9-CFF71100A13F'
+    CreateBillingAccountSpecification:
+      type: object
+      description: Create account request
+      required:
+        - quoteId
+        - action
+      properties:
+        action:
+          type: string
+          description: Action to be taken on Account creation request
+          enum:
+            - 'Create'
+            - 'Retry'
+          example: 'Create'
+        currentUserLegacySourceId:
+          type: string
+          description: UCM ID of current user
+          example: '78A6E6A2-DEF2-49e6-9C8E-1E815639F6F2'
+        localAccountId:
+          type: string
+          description: Local Account Id
+          example: 'Q1789'
+        memo:
+          type: string
+          description: notes mentioned by Consumer to create Billing Account
+          example: 'Premium customer'
+        opportunityRowId:
+          type: string
+          description: Row ID of Opportunity against which account is created
+          example: 'ID1424'
+        quoteId:
+          type: string
+          description: Quote Id for which account is created
+          example: '1-2RNCGINB'
+        quoteNumber:
+          type: string
+          description: Quote Number for which account is created
+          example: '74567'
+    CreateResponse:
+      type: object
+      description: Create account response
+      properties:
+        status:
+          type: string
+          description: Quote Number for which account is created
+          enum:
+            - Success
+          example: 'Success'
+        salesforceId:
+          type: string
+          description: Quote Number for which account is created
+          example: '0016u00000jV9cgAAC'
+    Category:
+      type: string
+      nullable: false
+      description: Category
+      enum:
+        - BILLING
+        - SALES
+        - WHITESPACE
+        - UNINTEGRATED
+        - RESELLERCUSTOMER
+    Sources:
+      type: string
+      nullable: false
+      description: Sources
+      enum:
+        - SFDC
+        - ECP
+        - MARKETO
+        - ORACLE
+        - SIEBEL
+        - WORKDAY
+        - QUALTRICS
+        - CAPLOGIX
+        - ECODAAS
+        - SINGLEVIEW
+        - SERVICENOW
+        - MARKETPLACE
+        - ZUORA
+        - R12
+        - MSFDC
+        - MPORTAL
+        - PCP
+    Region:
+      type: string
+      nullable: false
+      description: Region
+      enum:
+        - EMEA
+        - AMER
+        - APAC
+    CurrencyCodes:
+      type: string
+      nullable: false
+      description: Currency Code
+      enum:
+        - GBP
+        - USD
+        - BRL
+        - KRW
+        - MXN
+        - SEK
+        - OMR
+        - INR
+        - CHF
+        - TRY
+        - SGD
+        - EUR
+        - AED
+        - CNY
+        - AUD
+        - COP
+        - HKD
+        - JPY
+        - CAD
+        - BGN
+        - PLN
+        - MOP
+    CountryCodes:
+      type: string
+      nullable: false
+      description: Country Code list
+      enum:
+        - AD
+        - AE
+        - AF
+        - AG
+        - AI
+        - AL
+        - AM
+        - AO
+        - AQ
+        - AR
+        - AS
+        - AT
+        - AU
+        - AW
+        - AX
+        - AZ
+        - BA
+        - BB
+        - BD
+        - BE
+        - BF
+        - BG
+        - BH
+        - BI
+        - BJ
+        - BL
+        - BM
+        - BN
+        - BO
+        - BQ
+        - BR
+        - BS
+        - BT
+        - BV
+        - BW
+        - BY
+        - BZ
+        - CA
+        - CC
+        - CD
+        - CF
+        - CG
+        - CH
+        - CI
+        - CK
+        - CL
+        - CM
+        - CN
+        - CO
+        - CR
+        - CU
+        - CV
+        - CW
+        - CX
+        - CY
+        - CZ
+        - DE
+        - DJ
+        - DK
+        - DM
+        - DO
+        - DZ
+        - EC
+        - EE
+        - EG
+        - EH
+        - ER
+        - ES
+        - ET
+        - FI
+        - FJ
+        - FK
+        - FM
+        - FO
+        - FR
+        - GA
+        - GB
+        - GD
+        - GE
+        - GF
+        - GG
+        - GH
+        - GI
+        - GL
+        - GM
+        - GN
+        - GP
+        - GQ
+        - GR
+        - GS
+        - GT
+        - GU
+        - GW
+        - GY
+        - HK
+        - HM
+        - HN
+        - HR
+        - HT
+        - HU
+        - ID
+        - IE
+        - IL
+        - IM
+        - IN
+        - IO
+        - IQ
+        - IR
+        - IS
+        - IT
+        - JE
+        - JM
+        - JO
+        - JP
+        - KE
+        - KG
+        - KH
+        - KI
+        - KM
+        - KN
+        - KP
+        - KR
+        - KW
+        - KY
+        - KZ
+        - LA
+        - LB
+        - LC
+        - LI
+        - LK
+        - LR
+        - LS
+        - LT
+        - LU
+        - LV
+        - LY
+        - MA
+        - MC
+        - MD
+        - ME
+        - MF
+        - MG
+        - MH
+        - MK
+        - ML
+        - MM
+        - MN
+        - MO
+        - MP
+        - MQ
+        - MR
+        - MS
+        - MT
+        - MU
+        - MV
+        - MW
+        - MX
+        - MY
+        - MZ
+        - NA
+        - NC
+        - NE
+        - NF
+        - NG
+        - NI
+        - NL
+        - NO
+        - NP
+        - NR
+        - NU
+        - NZ
+        - OM
+        - PA
+        - PE
+        - PF
+        - PG
+        - PH
+        - PK
+        - PL
+        - PM
+        - PN
+        - PR
+        - PS
+        - PT
+        - PW
+        - PY
+        - QA
+        - RE
+        - RO
+        - RS
+        - RU
+        - RW
+        - SA
+        - SB
+        - SC
+        - SD
+        - SE
+        - SG
+        - SH
+        - SI
+        - SJ
+        - SK
+        - SL
+        - SM
+        - SN
+        - SO
+        - SR
+        - SS
+        - ST
+        - SV
+        - SX
+        - SY
+        - SZ
+        - TC
+        - TD
+        - TF
+        - TG
+        - TH
+        - TJ
+        - TK
+        - TL
+        - TM
+        - TN
+        - TO
+        - TR
+        - TT
+        - TV
+        - TW
+        - TZ
+        - UA
+        - UG
+        - UK
+        - UM
+        - US
+        - UY
+        - UZ
+        - VA
+        - VC
+        - VE
+        - VG
+        - VI
+        - VN
+        - VU
+        - WF
+        - WS
+        - YE
+        - YT
+        - ZA
+        - ZM
+        - ZW
+    SearchRequest:
+      type: object
+      description: Matched Response Details For The Given Input
+      properties:
+        search:
+          $ref: '#/components/schemas/Search'
+        filter:
+          $ref: '#/components/schemas/Filter'
+        pagination:
+          $ref: '#/components/schemas/PaginationRequest'
+        sort:
+          type: object
+          description: Sort elements
+          properties:
+            property:
+              $ref: '#/components/schemas/SortBy'
+            direction:
+              $ref: '#/components/schemas/SortOrder'
+          required:
+            - property
+            - direction
+      required:
+        - search
+    Search:
+      type: object
+      description: Search criteria to get account
+      properties:
+        partyAccount:
+          $ref: '#/components/schemas/SearchPartyAccount'
+        accountRelationship:
+          $ref: '#/components/schemas/SearchAccountRelationship'
+        eqxAccountInfo:
+          $ref: '#/components/schemas/SearchEqxAccountInfo'
+        eqxPartyFirmography:
+          $ref: '#/components/schemas/SearchEqxPartyFirmography'
+        eqxAccountAddress:
+          $ref: '#/components/schemas/SearchEqxAccountAddress'
+        createdDate:
+          type: string
+          format: date
+          description: System of records created date
+          example: '2020-07-01'
+        updatedDate:
+          type: string
+          format: date
+          description: System of records updated date
+          example: '2020-07-01'
+    Filter:
+      type: object
+      description: Search criteria to get account
+      properties:
+        partyAccount:
+          $ref: '#/components/schemas/FilterPartyAccount'
+        eqxAccountInfo:
+          $ref: '#/components/schemas/FilterEqxAccountInfo'
+        eqxAccountAddress:
+          $ref: '#/components/schemas/FilterEqxAccountAddress'
+        additionalInfo:
+          description: Additional Filter Info
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterEqxAdditionalInfo'
+    SearchPartyAccount:
+      type: object
+      description: Party Account Details to search account
+      properties:
+        name:
+          type: string
+          description: Name of Party Account
+          example: "Al Jazeera"
+        eqxSourceId:
+          type: string
+          description: Source ID
+          example: 'OPER1000506013'
+        eqxOperationalAccountSourceId:
+          type: string
+          description: Equinix Operational Account Source ID
+          example: 'MSTR10001475960101'
+        eqxSourceAliasName:
+          type: string
+          description: Equinix Source Account Alias name
+          example: 'Al Jazeera International Limited'
+        systemId:
+          type: string
+          description: System Id
+          example: '00180000012qmwPAAQ'
+    SearchAccountRelationship:
+      type: object
+      description: Account Relationship Object
+      properties:
+        account:
+          type: string
+          description: Account Relationship
+          example: '5801674'
+    SearchEqxAccountInfo:
+      type: object
+      description: Equinix Account Info
+      properties:
+        globalUltimateDuns:
+          type: string
+          description: Global Ultimate Duns Number
+          example: '12024'
+        partyUId:
+          type: string
+          description: Party UID
+          example: 'A822E68E-6F79-4507-B9A8-1BA3C4B31904'
+        resellerUId:
+          type: string
+          description: Reseller UID
+          example: '517911'
+        resellerUltimateSalesLegacySourceId:
+          type: string
+          description: Legacy System ID of ultimate parent of reseller account
+          example: 'CE8638BC-46D5-4bd2-B467-C8DE765AD11A'
+        portalOrganizationId:
+          type: string
+          description: Portal Organization ID
+          example: '31219387'
+        ultimateSalesAccountLegacySourceId:
+          type: string
+          description: ultimate sales account Legacy system Id
+          example: 'CE8638BC-46D5-4bd2-B467-C8DE765AD11A'
+        accountNumbers:
+          type: array
+          items:
+            type: string
+          description: Account number
+          example:
+            - '529528'
+        eqxPortalReferenceNumber:
+          type: string
+          description: ECP Reference Number
+          example: '19909052'
+        salesAccountLegacySourceId:
+          type: string
+          description: Sales Account Legacy system Id
+          example: '16803B73-24B1-4c4e-9BB9-CFF71100A13F'
+        alias:
+          type: string
+          description: Account Alias
+          example: 'AL JAZEERA MEDIA NETWORK'
+        localAccountName:
+          type: string
+          description: Local Account Name
+          example: 'AL JAZEERA'
+        dunsNumber:
+          type: string
+          description: Duns Number to identify and track business globally
+          example: '739826803'
+        portalOrganizationName:
+          type: string
+          description: Portal Organization Name
+          example: "AL JAZEERA MEDIA NETWORK"
+    SearchEqxPartyFirmography:
+      type: object
+      description: Equinix Party Firmography Information
+      properties:
+        inParentCompanyId:
+          type: string
+          description: Parent Company ID
+          example: '78658'
+        inUltimateParentId:
+          type: string
+          description: Ultimate Company parent ID
+          example: '12327'
+    SearchEqxAccountAddress:
+      type: object
+      description: Account address information
+      properties:
+        addressLine1:
+          type: string
+          description: address line1 for search address
+          example: '1 KNIGHTS BRIDGE'
+        addressLine2:
+          type: string
+          description: address line2 for search address
+          example: 'San Francisco'
+    FilterEqxAccountAddress:
+      type: object
+      description: Equinix Account Address
+      properties:
+        countryCode:
+          $ref: '#/components/schemas/CountryCodes'
+    FilterPartyAccount:
+      type: object
+      description: Party Account Details to filter account
+      properties:
+        sourceAccountType:
+          type: string
+          description: Source Account Type
+          example: 'OPERATIONAL'
+          enum:
+            - OPERATIONAL
+        accountType:
+          type: string
+          description: It defines category/classification of Account
+          example: 'PROSPECT'
+          enum:
+            - CUSTOMER
+            - PROSPECT
+            - ALUMNI
+            - PENDING ALUMNI
+        eqxBuyingRelationship:
+          type: string
+          description: Equinix Buying Relationship
+          example: 'DIRECT'
+          enum:
+            - DIRECT
+            - INDIRECT
+    FilterEqxAccountInfo:
+      type: object
+      description: Equinix Account Info for Filter
+      properties:
+        category:
+          $ref: '#/components/schemas/Category'
+        partnerType:
+          $ref: '#/components/schemas/PartnerType'
+        accountRegion:
+          $ref: '#/components/schemas/Region'
+        marketRegion:
+          $ref: '#/components/schemas/Region'
+    FilterEqxAdditionalInfo:
+      type: object
+      properties:
+        property:
+          type: string
+          description: property
+          example: 'partyAccount.eqxInfo.dnbNames'
+        values:
+          type: array
+          description: values
+          items:
+            type: string
+          example:
+            - "Adallom, Inc."
+            - "Helius Technologies"
+    Accounts:
+      type: object
+      description: Matched Response Details For The Given Input
+      properties:
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        data:
+          type: array
+          description: party account
+          items:
+            $ref: '#/components/schemas/PartyAccount'
+    SortOrder:
+      type: string
+      example: ASC
+      enum:
+        - ASC
+        - DESC
+      description: Sorting order ASC or DESC
+    SortBy:
+      type: string
+      enum:
+        - eqxSourceId
+        - accountNumber
+      example: eqxSourceId
+      description: Property to sort dataset
+    Pagination:
+      type: object
+      description: Pagination for the api
+      properties:
+        offset:
+          type: integer
+          description: Offset of the first item in the given response
+          default: 0
+          example: 0
+        limit:
+          type: integer
+          description: Number of elements returned per page
+          maximum: 50
+          example: 2
+        total:
+          type: integer
+          description: total number of records
+          example: 5
+        next:
+          type: string
+          description: Next set of records
+          example: '6'
+        previous:
+          type: string
+          description: Previous set of records
+          example: '4'
+    PaginationRequest:
+      type: object
+      description: Pagination for the api
+      properties:
+        offset:
+          type: integer
+          description: The offset parameter controls the starting point within the collection of resource results
+          example: 0
+        limit:
+          type: integer
+          description: Number of elements returned per page
+          maximum: 50
+          example: 2
+      required:
+        - offset
+        - limit
+    DefaultError:
+      type: object
+      description: Default Error Details
+      properties:
+        errors:
+          type: array
+          description: errors details
+          items:
+            $ref: '#/components/schemas/Error'
+    Error:
+      type: object
+      description: Error Details
+      properties:
+        errorCode:
+          type: string
+          description: Error code
+          example: 'EQ-1638011'
+        errorMessage:
+          type: string
+          description: Error message
+          example: 'Bad request - Mandatory field is missing'
+        correlationId:
+          type: string
+          description: Correlation ID
+          example: '694331071713043331598580757039'
+        details:
+          type: string
+          description: More information on errors
+          example: 'Mandatory field is missing - Refer to additional info for details'
+        help:
+          type: string
+          description: URL to a help page for the corresponding errorCode
+          example: 'http://help.equinix.com'
+        additionalInfo:
+          type: array
+          description: Additional Information of array
+          items:
+            $ref: '#/components/schemas/AdditionalInfo'
+      required:
+        - errorCode
+        - errorMessage
+    AccountCreationResponse:
+      type: object
+      description: Create account response
+      properties:
+        sourceId:
+          type: string
+          description: Unique id of source system
+          example: 'I0001'
+        status:
+          type: string
+          description: Represents the status for accepting a request
+          example: ACCEPTED
+          enum:
+            - ACCEPTED
+        source:
+          $ref: '#/components/schemas/Sources'
+    AdditionalInfo:
+      type: object
+      description: Additional Information
+      properties:
+        property:
+          type: string
+          description: This refers to the name of one of the following that is passed when invoking the API - query parameter, path parameter, JSON property of HTTP request body. It is used if there is a need to explicitly hightlight the name of the property
+          example: 'source'
+        reason:
+          type: string
+          description: Error message specific to the corresponding property
+          example: 'Mandatory field is missing'
+    ExternalSystemId:
+      type: object
+      description: Represents Source System name and Ids
+      properties:
+        systemName:
+          type: string
+          description: System Name from which the account is created or updated
+          example: 'SFDC'
+        systemId:
+          type: string
+          description: System Id
+          example: '00180000012qmwPAAQ'
+    AdditionalInfoAttribute:
+      type: object
+      description: Extended Account Entity to accommodate additional Equinix specific attributes in Legacy System.
+      properties:
+        property:
+          type: string
+          description: The name of the property
+          example: 'name'
+        value:
+          type: string
+          description: The value of the corresponding property
+          example: 'Al-Jazeera'
+    PartyAccount:
+      type: object
+      description: Represents the Account response object
+      properties:
+        additionalInfoAttributes:
+          type: array
+          description: Account info extended attributes
+          items:
+            $ref: '#/components/schemas/AdditionalInfoAttribute'
+        externalSystemIds:
+          type: array
+          description: Represents List of Source System name and Id
+          items:
+            $ref: '#/components/schemas/ExternalSystemId'
+        sourceAccountType:
+          type: string
+          description: Source Account Type
+          example: OPERATIONAL
+          enum:
+            - MASTER
+            - OPERATIONAL
+        accountType:
+          type: string
+          description: It defines the category(classification) of an Account
+          example: CUSTOMER
+          enum:
+            - CUSTOMER
+            - PROSPECT
+            - ALUMNI
+            - PENDING ALUMNI
+        creditLimit:
+          type: string
+          description: The maximum amount of money that may be charged on an account
+          example: '1000'
+        description:
+          type: string
+          description: Detailed description of the party account
+          example: 'PartAccountDetails'
+        id:
+          type: string
+          description: Unique identifier of the account
+          example: 'I0001'
+        createdDateTime:
+          type: string
+          description: Creation date of the account
+          format: date-time
+          example: '2021-10-19T03:54:58.038Z'
+        lastModifiedDateTime:
+          type: string
+          description: Date of last modification of the account
+          format: date-time
+          example: '2021-10-24T12:31:20.741Z'
+        name:
+          type: string
+          description: Name of the account
+          example: 'Al-Jazeera'
+        status:
+          type: string
+          description: It states lifecycle status of an account
+          example: ACTIVE
+          enum:
+            - ACTIVE
+            - INACTIVE
+        defaultPaymentMethod:
+          type: string
+          description: PaymentMethod reference. A payment method defines a specific mean of payment (e.g direct debit).
+          example: 'DIRECT DEBIT'
+        isEqxProspectAccount:
+          type: boolean
+          description: Indicates if the account is a Prospective Customer
+          example: true
+        eqxSourceId:
+          type: string
+          description: Unique identifier of operational/master account in MDM (Master Data Management)
+          example: 'MSTR1006995'
+        eqxMasterAccountId:
+          type: string
+          description: MDM ID of the associated Master Account(Golden Record in MDM)
+          example: '10001475960101'
+        eqxOperationalAccountSourceId:
+          type: string
+          description: Unique identifier that groups all duplicate operational accounts within account category-(Sales/Billing)
+          example: 'MSTR10001475960101'
+        eqxPartyStage:
+          type: string
+          description: Current stage of account in Account Life cycle
+          example: 'Prospect'
+        eqxBuyingRelationships:
+          type: array
+          description: Indicates if the customer is directly or indirectly buying from equinix
+          items:
+            type: string
+            enum:
+              - DIRECT
+              - INDIRECT
+          example:
+            - DIRECT
+        eqxSourceAliasName:
+          type: string
+          description: MDM Cleansed name of the account
+          example: 'Al Jazeera International Limited'
+        isEqxSubDivision:
+          type: boolean
+          description: equinix sub division
+          example: true
+        accountRelationship:
+          $ref: '#/components/schemas/AccountRelationship'
+        paymentPlan:
+          $ref: '#/components/schemas/PaymentPlan'
+        paymentMethodReference:
+          $ref: '#/components/schemas/PaymentMethodRef'
+        accountBalance:
+          type: array
+          description: Balances linked to the account
+          items:
+            $ref: '#/components/schemas/AccountBalance'
+        accountTaxExemption:
+          type: array
+          description: Proof of freedom from taxes imposed by a taxing jurisdiction
+          items:
+            $ref: '#/components/schemas/AccountTaxExemption'
+        billStructure:
+          $ref: '#/components/schemas/BillStructure'
+        eqxAccountInfo:
+          $ref: '#/components/schemas/EQXAccountInfo'
+        eqxAccountCredit:
+          $ref: '#/components/schemas/EQXAccountCredit'
+        eqxAccountRevenue:
+          $ref: '#/components/schemas/EQXAccountRevenue'
+        eqxAccountAddress:
+          type: array
+          description: account address
+          items:
+            $ref: '#/components/schemas/EQXAccountAddress'
+        eqxPartyFirmography:
+          $ref: '#/components/schemas/EQXPartyFirmography'
+    AccountRelationship:
+      type: object
+      description: Significant connection between accounts. For instance an aggregating account for a list of shop branches each having its own billing account.
+      properties:
+        validFor:
+          type: string
+          description: Validity period of that relationship
+          example: '30'
+        accounts:
+          type: array
+          description: Account reference. A account may be a party account or a financial account.
+          items:
+            type: string
+          example:
+            - '88168'
+            - '98169'
+        accountReference:
+          $ref: '#/components/schemas/AccountReference'
+    AccountReference:
+      type: object
+      description: Account reference. A account may be a party account or a financial account.
+      properties:
+        description:
+          type: string
+          description: Detailed description of the account
+          example: 'Master Account'
+        id:
+          type: string
+          description: Unique identifier of the account
+          example: 'I0001'
+        name:
+          type: string
+          description: Name of the account
+          example: 'Al-Jazeera'
+        accountBalance:
+          type: string
+          description: Balances linked to the account
+          example: '500'
+    PaymentPlan:
+      type: object
+      description: Defines a plan for payment (when a party wants to spread his payments)
+      properties:
+        paymentTerms:
+          type: string
+          description: payment terms
+          example: 'Net 30'
+        id:
+          type: string
+          description: payment plan id
+          example: '12312'
+        numberOfPayments:
+          type: string
+          description: Number of payments used to spread the global payment
+          example: '1'
+        paymentFrequency:
+          type: string
+          description: Frequency of the payments, such as monthly and bimonthly
+          example: 'monthly'
+        priority:
+          type: string
+          description: Priority of the payment plan
+          example: 'Priority'
+        state:
+          type: string
+          description: Status of the payment plan
+          example: EFFECTIVE
+          enum:
+            - EFFECTIVE
+            - INEFFECTIVE
+        totalAmount:
+          type: string
+          description: Amount paid
+          example: '100'
+        validFor:
+          type: string
+          description: Validity period of the payment plan
+          example: '30'
+        paymentMethod:
+          type: string
+          description: PaymentMethod reference. A payment method defines a specific mean of payment (e.g direct debit).
+          example: 'direct debit'
+    PaymentMethodRef:
+      type: object
+      description: A reference to a specific payment method. A payment method defines a specific way to pay, such as credit card, debit card, or direct debit.
+      properties:
+        id:
+          type: string
+          description: a unique identifier for the payment method
+          example: 'I0001'
+        name:
+          type: string
+          description: a human-readable name for the payment method
+          example: 'Online'
+    AccountBalance:
+      type: object
+      description: Balances linked to the account
+      properties:
+        amount:
+          type: string
+          description: Balance amount
+          example: '100'
+        validFor:
+          type: string
+          description: Balance validity period
+          example: '30'
+    AccountTaxExemption:
+      type: object
+      description: Proof of freedom from taxes imposed by a taxing jurisdiction
+      properties:
+        certificateNumber:
+          type: string
+          description: Identifier of a document that shows proof of exemption from taxes for the taxing jurisdiction
+          example: '3333'
+        issuingJurisdiction:
+          type: string
+          description: Name of the taxing jurisdiction for which taxes are exempt
+          example: 'federal'
+        reason:
+          type: string
+          description: Reason of the tax exemption
+          example: 'StateTax'
+        validFor:
+          type: string
+          description: Period for which the exemption is valid
+          example: '60'
+    BillStructure:
+      type: object
+      description: The structure of the bill for party accounts (billing or settlement).
+      properties:
+        id:
+          type: string
+          description: Unique identifier for Bill structure
+          example: '1022021'
+        presentationMedia:
+          type: string
+          description: An attachment by value or by reference.
+          example: 'Al-Jazeera'
+        format:
+          type: string
+          description: An attachment format by reference.
+          example: 'PDF'
+        billFormatReferenceOrValues:
+          type: array
+          description: bill format reference or value
+          items:
+            $ref: '#/components/schemas/BillFormatReferenceOrValue'
+        billingCycleSpecification:
+          $ref: '#/components/schemas/BillingCycleSpecification'
+        billPresentationMediaReferenceOrValues:
+          type: array
+          description: billing presentation media reference or value
+          items:
+            $ref: '#/components/schemas/BillPresentationMediaReferenceOrValue'
+    BillFormatReferenceOrValue:
+      type: object
+      description: Related Entity reference. A related party defines party or party role linked to a specific entity.
+      properties:
+        vatRegistrationNumber:
+          type: string
+          description: Related Entity reference. A related party defines party or party role linked to a specific entity.
+          example: 'GB9004326758'
+        description:
+          type: string
+          description: An explanatory text for this bill format.
+          example: 'PDF'
+        id:
+          type: string
+          description: Unique identifier of a related entity.
+          example: '10001'
+        name:
+          type: string
+          description: Name of the related entity.
+          example: 'Al-Jazeera'
+    AccountChargeDueDetails:
+      type: object
+      description: A detailed description of account charge details.
+      properties:
+        accountNumber:
+          type: string
+          description: Account number
+          example: '529528'
+        chargesDue:
+          type: string
+          description: charges due for the account
+          example: '3119.96'
+        chargesDueAsOfDateTime:
+          type: string
+          format: date-time
+          description: Date when the due charges were calculated
+          example: '2020-07-01T00:00:00'
+        currencyCode:
+          $ref: '#/components/schemas/CurrencyCodes'
+    BillingCycleSpecification:
+      type: object
+      description: A detailed description of when to initiate a billing cycle and the various sub steps of a billing cycle.
+      properties:
+        accountChargeDueDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountChargeDueDetails'
+          description: Determines account charge due details.
+        isPower:
+          type: boolean
+          description: Power Indicator of billing cycle.
+          example: true
+        cycle:
+          type: string
+          description: When the bill cycle is for the customer.
+          example: '1'
+        method:
+          type: string
+          description: Determines if the customer will be billed in advance or in arrears (where applicable).  Note product should have an attribute to capture the same because the customer might not choose so it should be based on product.
+          example: 'Advance'
+        billingDateShiftDateTime:
+          type: string
+          format: date-time
+          description: An offset of a billing/settlement date. The offset is expressed as number of days with regard to the start of the billing/settlement period.
+          example: '2020-07-01T00:00:00.00Z'
+        billingPeriod:
+          type: string
+          description: A billing time period. It can be recurring, for example week, month,quarter of year, year .
+          example: 'month'
+        chargeOffSet:
+          type: string
+          description: An offset of a date through which charges previously received by the billing system will appear on the bill. The offset is expressed as number of days with regard to the start of the BillingPeriod.
+          example: '15'
+        creditOffSet:
+          type: string
+          description: An offset of a date through which credits previously received by the billing system will appear on the bill. The offset is expressed as number of days with regard to the start of the BillingPeriod.
+          example: '10'
+        shift:
+          type: string
+          description: An offset of a billing/settlement date. The offset is expressed as number of days with regard to the start of the billing/settlement period.
+          example: '15'
+        description:
+          type: string
+          description: An explanation regarding this billing cycle specification
+          example: 'billing cycle specification'
+        frequency:
+          type: string
+          description: Frequency of the billing cycle (monthly for instance)
+          example: 'Monthly'
+        id:
+          type: string
+          description: Unique identifier of the billing cycle specification
+          example: '12341'
+        mailingOffset:
+          type: string
+          description: An offset of a customer bill mailing date. The offset is expressed as number of days with regard to the start of the BillingPeriod.
+          example: '15'
+        name:
+          type: string
+          description: A short descriptive name
+          example: 'Al-Jazeera'
+        paymentDueOffset:
+          type: string
+          description: An offset of a payment due date. The offset is expressed as number of days with regard to the start of the BillingPeriod.
+          example: '15'
+        validFor:
+          type: string
+          description: The period for which the billing specification cycle is valid
+          example: '10'
+    BillPresentationMediaReferenceOrValue:
+      type: object
+      description: An attachment by value or by reference.
+      properties:
+        billingShift:
+          type: integer
+          description: An offset of a billing/settlement date. The offset is expressed as number of days with regard to the start of the billing/settlement period.
+          example: 1
+        billingPeriod:
+          type: string
+          description: A billing time period. It can be recurring, for example week, month,quarter of year, year .
+          example: 'week'
+        chargeOffSet:
+          type: integer
+          description: An offset of a date through which charges previously received by the billing system will appear on the bill. The offset is expressed as number of days with regard to the start of the BillingPeriod.
+          example: 2
+        creditOffSet:
+          type: integer
+          description: An offset of a date through which credits previously received by the billing system will appear on the bill. The offset is expressed as number of days with regard to the start of the BillingPeriod.
+          example: 2
+        shift:
+          type: integer
+          description: An offset of a billing/settlement date. The offset is expressed as number of days with regard to the start of the billing/settlement period.
+          example: 2
+        frequency:
+          type: string
+          description: Frequency of the billing cycle (monthly for instance)
+          example: 'Monthly'
+        mailingOffset:
+          type: integer
+          description: An offset of a customer bill mailing date. The offset is expressed as number of days with regard to the start of the BillingPeriod.
+          example: 2
+        paymentDueOffset:
+          type: integer
+          description: An offset of a payment due date. The offset is expressed as number of days with regard to the start of the BillingPeriod.
+          example: 2
+        validFor:
+          type: string
+          format: date-time
+          description: The period for which the billing specification cycle is valid
+          example: 2020-07-01T00:00:00.00Z
+        description:
+          type: string
+          description: A short descriptive name
+          example: 'bill presentation media'
+        id:
+          type: string
+          description: Unique identifier of the bill presentation media
+          example: '19202'
+        name:
+          type: string
+          description: A short descriptive name
+          example: 'Al-Jazeera'
+    PurchaseOrderDetails:
+      type: object
+      description: Extended Account Entity to accommodate PO Exception specific fields.
+      properties:
+        purchaseOrderMaximumCharacterLimit:
+          type: string
+          description: Purchase order maximum character count
+          example: '100'
+        purchaseOrderMinimumCharacterLimit:
+          type: string
+          description: Purchase order minimum character limit
+          example: '10'
+        purchaseOrderTrackingType:
+          type: string
+          description: Purchase order Tracking type
+          example: 'None'
+        isPurchaseOrderExempted:
+          type: boolean
+          description: Flag to indicate if customer is exempted to provide purchase order
+          example: false
+        isPurchaseOrderRequired:
+          type: boolean
+          description: Flag to indicate if customer requires purchase order
+          example: true
+        isAllRecurringCharges:
+          type: boolean
+          description: Flag to indicate customer is exempted from purchase order for recurring charges
+          example: true
+        isAllServices:
+          type: boolean
+          description: Customer is exempted from PO for all products and services
+          example: true
+        isAllZeroValueService:
+          type: boolean
+          description: Indicates account part of non-billable services
+          example: true
+        isPurchaseOrderNetwork:
+          type: boolean
+          description: Customer is exempted from PO for interconnection products
+          example: true
+        isPurchaseOrderPower:
+          type: boolean
+          description: Customer is exempted from PO for power products
+          example: true
+        isPurchaseOrderSpace:
+          type: boolean
+          description: Customer is exempted from PO for space products
+          example: true
+        isProfessionalServices:
+          type: boolean
+          description: Customer is exempted from PO for services
+          example: true
+        isSmartHands:
+          type: boolean
+          description: Customer is exempted from PO for smart hands
+          example: true
+        isAllNonRecurringCharges:
+          type: boolean
+          description: Flag to indicate customer is exempted from purchase order for one-time charges
+          example: true
+    PartyAccountCreateRequest:
+      type: object
+      description: Represents an object for creating an account
+      properties:
+        additionalInfoAttributes:
+          type: array
+          description: Account info extended attributes
+          items:
+            $ref: '#/components/schemas/AdditionalInfoAttribute'
+        accountType:
+          type: string
+          description: It defines the category(classification) of an Account
+          example: CUSTOMER
+          enum:
+            - CUSTOMER
+            - PROSPECT
+            - ALUMNI
+            - PENDING ALUMNI
+        id:
+          type: string
+          description: Unique identifier of the account
+          example: 'I0001'
+        sourceAccountType:
+          type: string
+          description: Source Account Type
+          example: 'OPERATIONAL'
+          enum:
+            - MASTER
+            - OPERATIONAL
+        eqxSourceId:
+          type: string
+          description: Unique identifier of operational/master account in MDM (Master Data Management)
+          example: 'OPER1006995'
+        eqxMasterAccountId:
+          type: string
+          description: Source system id of the associated Master Account(Golden Record in MDM)
+          example: 'MSTR75960101'
+        createdDateTime:
+          type: string
+          description: Creation date of the account
+          format: date-time
+          example: '2021-10-19T03:54:58.038Z'
+        lastModifiedDateTime:
+          type: string
+          description: Date of last modification of the account
+          format: date-time
+          example: '2021-10-24T12:31:20.741Z'
+        name:
+          type: string
+          description: Name of the account
+          example: 'Al-Jazeera'
+        status:
+          type: string
+          description: It states lifecycle status of an account
+          example: ACTIVE
+          enum:
+            - ACTIVE
+            - INACTIVE
+        defaultPaymentMethod:
+          type: string
+          description: Payment Method reference. A payment method defines a specific mean of payment (e.g direct debit).
+          example: 'DIRECT DEBIT'
+        isEqxProspectAccount:
+          type: boolean
+          description: Indicates if the account is a Prospective Customer
+          example: true
+        eqxPartyStage:
+          type: string
+          description: Current stage of account in Account Life cycle
+          example: 'Prospect'
+        eqxBuyingRelationship:
+          type: string
+          description: Indicates if the customer is directly or indirectly buying from equinix
+          example: DIRECT
+          enum:
+            - DIRECT
+            - INDIRECT
+        eqxSourceAliasName:
+          type: string
+          description: MDM Cleansed name of the account
+          example: 'Al Jazeera International Limited'
+        eqxAccountInfo:
+          $ref: '#/components/schemas/EQXAccountInfoRequest'
+        eqxAccountAddresses:
+          type: array
+          description: account address
+          items:
+            $ref: '#/components/schemas/EQXAccountAddressRequest'
+        eqxPartyFirmography:
+          $ref: '#/components/schemas/EQXPartyFirmography'
+      required:
+        - id
+        - accountType
+        - name
+    EQXAccountInfoRequest:
+      type: object
+      description: Extended Account Entity to accommodate additional Equinix specific fields in Legacy System.
+      properties:
+        isMaskedAccount:
+          type: boolean
+          description: flag to indicate if the account is masked or not
+          example: false
+        partyType:
+          type: string
+          description: Indicates the role associated with the account.
+          example: 'INTERNAL'
+        resellerUltimateSalesLegacySourceId:
+          type: string
+          description: Legacy system ID of ultimate parent of reseller account
+          example: '7B0A42FB-EF76-4f5c-B53B-61B437E9AE11'
+        billingIndicator:
+          type: string
+          description: Billing Indicator
+          example: 'Global'
+        accountCustomerAlias:
+          type: string
+          description: customers alias name
+          example: 'Al Jazeera International Limited'
+        isPublishCustomerName:
+          type: boolean
+          description: Indicator for customers publish flag
+          example: true
+        isBillable:
+          type: boolean
+          description: Indicator for customers billable flag
+          example: false
+        id:
+          type: string
+          description: Id of Extended Account Entity
+          example: '1001'
+        modId:
+          type: string
+          description: ModId for Extended Account Entity
+          example: '12024'
+        accountRegion:
+          $ref: '#/components/schemas/Region'
+        currencyCode:
+          $ref: '#/components/schemas/CurrencyCodes'
+        currentVolume:
+          type: string
+          description: current flow for extended account entity
+          example: '10'
+        doingBusinessAs:
+          type: string
+          description: Doing Business As - DNB to populate with value from first record ONLY if NULL
+          example: 'Manager'
+        ultimateSalesAccountLegacySourceId:
+          type: string
+          description: Ultimate Sales Account Legacy system Id
+          example: 'CE8638BC-46D5-4bd2-B467-C8DE765AD11A'
+        mainFaxNumber:
+          type: string
+          description: Contact number to communicate through Fax Number
+          example: '15-833-2000'
+        phone:
+          type: string
+          description: Telephone - We will take the first phone type provided
+          example: '020 7201 2800'
+        operatingUnit:
+          type: string
+          description: This would store all the Operating Units related to an account as a delimited text sourced from EBS
+          example: 'EQUINIX - US'
+        partnerStatus:
+          type: string
+          description: Lifecycle state of the partner
+          example: 'Established'
+        sic1Code:
+          type: string
+          description: Standard Industrial code for Extended account represents PrimaryDnBIC
+          example: '1469'
+        sic2Code:
+          type: string
+          description: Standard Industrial code for Extended account represents PrimaryNAIC
+          example: '511210'
+        sic3Code:
+          type: string
+          description: Standard Industrial code for Extended account represents PrimaryUSIC
+          example: '66.200'
+        sic4Code:
+          type: string
+          description: Standard Industrial code for Extended account represents PrimaryUKIC
+          example: '64.200'
+        sic1CodeDescription:
+          type: string
+          description: Description of PrimaryDnBIC
+          example: 'Television Broadcasting'
+        sic2CodeDescription:
+          type: string
+          description: Description of PrimaryNAIC
+          example: 'Regional Broadcasting'
+        sic3CodeDescription:
+          type: string
+          description: Description of PrimaryUSIC
+          example: 'Telecommunications Infrastructure'
+        sic4CodeDescription:
+          type: string
+          description: Description of PrimaryUKIC
+          example: 'Telecommunications service for business'
+        yearStarted:
+          type: string
+          description: The year the business establishment was started. If a change in control has taken effect, the year started is the year in which the change occurred. An example of change of control is a corporation becoming a subsidiary of another corporation. This field is blank for branch locations.
+          example: '2004'
+        isFederal:
+          type: boolean
+          description: federal flag for Extended Account Entity
+          example: true
+        alias:
+          type: array
+          description: Customer alias for the account name. Customer specifies how they want to be known.
+          items:
+            type: string
+            example: 'AL-CORP'
+        partyUId:
+          type: string
+          description: Legacy System Id of Account
+          example: 'A822E68E-6F79-4507-B9A8-1BA3C4B31904'
+        segment:
+          type: string
+          description: Segment to which the account belongs
+          example: 'Content & Digital Media'
+        segmentApplication:
+          type: string
+          description: Segment Application
+          example: 'To Be Assigned'
+        subSegment:
+          type: string
+          description: Sub-Segment or subset of connections
+          example: 'Broadcast & Streaming Media'
+        partnerMarketSegment:
+          type: string
+          description: groups based on the specific criteria and such as size, revenue etc
+          example: 'Network'
+        updatedBy:
+          type: string
+          description: who updated account
+          example: 'admin'
+        marketRegion:
+          $ref: '#/components/schemas/Region'
+        contractSignedDateTime:
+          type: string
+          format: date-time
+          description: Date contact was signed
+          example: '2024-09-01T00:00:00.00Z'
+        contractEndDateTime:
+          type: string
+          format: date-time
+          description: date of contract ends
+          example: '2024-12-01T00:00:00.00Z'
+        partnerType:
+          $ref: '#/components/schemas/PartnerType'
+        partnerSubType:
+          type: string
+          description: Detailed classification of Partner role
+          example: 'Technology Partner'
+        classification:
+          type: string
+          description: classification of account
+          example: 'Co-location'
+        category:
+          type: string
+          description: Defines the type of account
+          example: 'Billing'
+        operation:
+          type: string
+          description: relating to the routine functioning and activities of the party
+          example: 'Upsert'
+        integrationId:
+          type: string
+          description: Integration ID for Extended account Entity
+          example: '1703072960037'
+        economicCurrency:
+          $ref: '#/components/schemas/CurrencyCodes'
+        exchangeName:
+          type: string
+          description: This attribute contains IBX Exchange name
+          example: 'EQX1000002546'
+        eqxInvoiceDeliveryMethod:
+          type: string
+          description: Customer preference on invoices delivery.
+          example: 'Email'
+        keyAccount:
+          type: string
+          description: Significant account for entity
+          example: '23532'
+        legalStatus:
+          type: string
+          description: The status defined by Law
+          example: 'GAM (3)'
+        isMarketPlace:
+          type: boolean
+          description: Indicates if the customer can be displayed in Market Place.
+          example: true
+        nonMarketableCompany:
+          type: string
+          description: Non-marketable company reason
+          example: 'Insufficient Data'
+        portalOrganizationId:
+          type: string
+          description: Unique identification number for portal organization
+          example: '32678'
+        portalOrganizationName:
+          type: string
+          description: Organization name customer creates in Portal.
+          example: 'AL JAZEERA MEDIA NETWORK'
+        rank:
+          type: string
+          description: D&B Attribute - Provides the ranking of the organization associated with the Rank Type field.
+          example: 'Fortune'
+        subsidiaryIndicator:
+          type: string
+          description: listing in order
+          example: '23'
+        substantialPartyCurrency:
+          type: string
+          description: The currency of the party that has substantial interest in the said party.
+          example: 'USD'
+        marketValue:
+          type: string
+          description: amount of asset analysed
+          example: '325623'
+        accountNumber:
+          type: string
+          description: Account number
+          example: '529528'
+        legalStructureDescription:
+          type: string
+          description: Legal Structure description
+          example: 'LLC Limited liability company'
+        domesticUltimateBusinessName:
+          type: string
+          description: Domestic Ultimate Business Name
+          example: 'AL JAZEERA GLOBAL HUB CO LIMITED'
+        employeeTotal:
+          type: string
+          description: D&B Attribute - Provides the total number of Employees at the organization represented by the account
+          example: '128'
+        globalUltimateBusinessName:
+          type: string
+          description: Global Ultimate Business Name
+          example: 'AL JAZEERA GLOBAL HUB CO LIMITED'
+        lineOfBusiness:
+          type: string
+          description: Line of Business
+          example: 'Television broadcasting stations, nsk'
+        majorIndustryCategory:
+          type: string
+          description: Industry category for entity
+          example: 'Billing'
+        ownershipType:
+          type: string
+          description: Type of Ownership
+          example: 'owned'
+        marketValueUnits:
+          type: string
+          description: Market value of this company
+          example: '10'
+        rankType:
+          type: string
+          description: level of risk
+          example: '1'
+        isInternalAccount:
+          type: boolean
+          description: This would be used to mark an account as Internal Account
+          example: true
+        uniqueAlias:
+          type: string
+          description: Unique Alias for entity
+          example: 'AL CORP'
+        regionServed:
+          type: string
+          description: serving region
+          example: 'Asia'
+        targetCustomerSize:
+          type: string
+          description: Revenue based Sales Target Customer size
+          example: '50'
+        eqxPortalReferenceNumber:
+          type: string
+          description: Unique identifier in ECP
+          example: 'IC-585958:4224'
+        isBillNotify:
+          type: boolean
+          description: Bill Notify for entity
+          example: true
+        ibx:
+          type: string
+          description: The IBX for the first asset
+          example: 'CH1'
+        legacyAccountNumber:
+          type: string
+          description: The provided account identifier from the source system indicated.
+          example: '941151134'
+        localAccountName:
+          type: string
+          description: Account Name in local characters
+          example: 'AL JAZEERA'
+        isChurnIndicator:
+          type: boolean
+          description: Churn Indicator is an indicator to sales team that indicate that a particular customer may leave equinix
+          example: true
+        territory:
+          type: string
+          description: that is incorporated under the laws of any US territory
+          example: 'GAM'
+        localAccountIdentifier:
+          type: string
+          description: a unique number for identification of local account
+          example: 'Brazil'
+        isInterCompany:
+          type: boolean
+          description: Intercompany for entity
+          example: true
+        countryCode:
+          $ref: '#/components/schemas/CountryCodes'
+        operatingUnitIbx:
+          type: string
+          description: Operating Unit IBX for entity
+          example: 'CH1'
+        salesAccountLegacySourceId:
+          type: string
+          description: Legacy System Id of Sales Support Associate
+          example: '183940'
+        source:
+          $ref: '#/components/schemas/Sources'
+        ultimateParentLegacySourceId:
+          type: string
+          description: ultimate parent for Legacy System Id
+          example: '4823'
+      required:
+        - source
+        - category
+    EQXAccountInfo:
+      type: object
+      description: Extended Account Entity to accommodate additional Equinix specific fields in Legacy System Id.
+      properties:
+        domesticUltimateDuns:
+          type: string
+          description: Domestic Ultimate Duns Number
+          example: '12024'
+        globalUltimateDuns:
+          type: string
+          description: Global Ultimate Duns Number
+          example:  '12024'
+        purchaseOrderDetails:
+          $ref: '#/components/schemas/PurchaseOrderDetails'
+        partnerTier:
+          type: string
+          description: States the tier of the partner
+          example: 'Gold'
+        isPartner:
+          type: boolean
+          description: Indicates whether the account is a partner account or not (ex- a reseller can be a partner)
+          example: true
+        resellerUltimateSalesLegacySourceId:
+          type: string
+          description: Legacy System Id of ultimate parent of reseller account
+          example: '7B0A42FB-EF76-4f5c-B53B-61B437E9AE11'
+        billingIndicator:
+          type: string
+          description: Billing Indicator
+          example: 'Global'
+        accountCustomerAlias:
+          type: string
+          description: customers alias name
+          example: 'Al Jazeera International Limited'
+        isPublishCustomerName:
+          type: boolean
+          description: Indicator for customers publish flag
+          example: true
+        isBillable:
+          type: boolean
+          description: Indicator for customers billable flag
+          example: false
+        isSubCustomer:
+          type: boolean
+          description: Indicator for sub customer flag
+          example: false
+        isSubCustomerBilling:
+          type: boolean
+          description: Sub Customer Billing flag is to identify the billing for sub customer or reseller
+          example: false
+        purchaseOrderFormatRestricted:
+          type: string
+          description: Indicator to check if purchase order is restricted
+          example: '1'
+        isGovernmentAccount:
+          type: boolean
+          description: Indicates if the account is Government Account or not
+          example: false
+        id:
+          type: string
+          description: Id of Extended Account Entity
+          example: '1001'
+        modId:
+          type: string
+          description: ModId for Extended Account Entity
+          example: '12024'
+        accountRegion:
+          $ref: '#/components/schemas/Region'
+        currencyCode:
+          $ref: '#/components/schemas/CurrencyCodes'
+        dunsNumber:
+          type: string
+          description: Duns Number
+          example: '739826803'
+        currentVolume:
+          type: string
+          description: current flow for extended account entity
+          example: '10'
+        doingBusinessAs:
+          type: string
+          description: Doing Business As - DNB to populate with value from first record ONLY if NULL
+          example: 'Manager'
+        ultimateSalesAccountLegacySourceId:
+          type: string
+          description: ultimate Sales Account Legacy system Id
+          example: 'CE8638BC-46D5-4bd2-B467-C8DE765AD11A'
+        federalTaxNumber:
+          type: string
+          description: unique number for Tax jurisdiction purposes
+          example: '12-609405112'
+        mainFaxNumber:
+          type: string
+          description: Contact number to communicate through Fax Number
+          example: '15-833-2000'
+        phone:
+          type: string
+          description: Telephone - We will take the first phone type provided
+          example: '020 7201 2800'
+        noOfEmployees:
+          type: string
+          description: employees count
+          example: '100'
+        groupTypCode:
+          type: string
+          description: group type code for Extended account entity
+          example: '1231'
+        vatRegistrationNumber:
+          type: string
+          description: VAT Registration Number
+          example: 'GB9004326758'
+        operatingUnit:
+          type: string
+          description: This would store all the Operating Units related to an account as a delimited text sourced from EBS
+          example: 'EQUINIX - US'
+        partnerStatus:
+          type: string
+          description: Lifecycle state of the partner
+          example: 'Established'
+        sic1Code:
+          type: string
+          description: Standard Industrial code for Extended account represents PrimaryDnBIC
+          example: '1469'
+        sic2Code:
+          type: string
+          description: Standard Industrial code for Extended account represents PrimaryNAIC
+          example: '511210'
+        sic3Code:
+          type: string
+          description: Standard Industrial code for Extended account represents PrimaryUSIC
+          example: '66.200'
+        sic4Code:
+          type: string
+          description: Standard Industrial code for Extended account represents PrimaryUKIC
+          example: '64.200'
+        sic1CodeDescription:
+          type: string
+          description: Description of PrimaryDnBIC
+          example: 'Television Broadcasting'
+        sic2CodeDescription:
+          type: string
+          description: Description of PrimaryNAIC
+          example: 'Regional Broadcasting'
+        sic3CodeDescription:
+          type: string
+          description: Description of PrimaryUSIC
+          example: 'Telecommunications Infrastructure'
+        sic4CodeDescription:
+          type: string
+          description: Description of PrimaryUKIC
+          example: 'Telecommunications service for business'
+        insuranceNumber:
+          type: string
+          description: a unique number assigned to insurer
+          example: '189282'
+        yearStarted:
+          type: string
+          description: The year the business establishment was started. If a change in control has taken effect, the year started is the year in which the change occurred. An example of change of control is a corporation becoming a subsidiary of another corporation. This field is blank for branch locations.
+          example: '2004'
+        isFederal:
+          type: boolean
+          description: federal flag for Extended Account Entity
+          example: true
+        npsScore:
+          type: string
+          description: Net Promoter score used to gauge customer loyalty, satisfaction with a party
+          example: '1131'
+        churnRisk:
+          type: string
+          description: recording or feedback
+          example: '133'
+        alias:
+          type: array
+          description: Customer alias for the account name. Customer specifies how they want to be known.
+          items:
+            type: string
+            example: 'AL-CORP'
+        dontCall:
+          type: string
+          description: Extended Account Entity dont call
+          example: 'Required'
+        partyUIds:
+          type: array
+          items:
+            type: string
+          description: UCM ID of Account
+          example:
+            - 'A822E68E-6F79-4507-B9A8-1BA3C4B31904'
+        stateEntityRegistrationCode:
+          type: string
+          description: A unique Entity identification number for Account in State
+          example: '155124'
+        cityEntityRegistrationCode:
+          type: string
+          description: A unique Entity identification number for Account in City
+          example: '124515'
+        nationalEntityRegistrationCode:
+          type: string
+          description: A unique Entity identification number for Account in a country
+          example: '1255124'
+        countyEntityRegistrationCode:
+          type: string
+          description: A unique Entity identification number for Account in a county
+          example: '6754'
+        segments:
+          type: array
+          items:
+            type: string
+          description: Segment to which the account belongs
+          example:
+            - 'Content & Digital Media'
+        segmentApplication:
+          type: string
+          description: Segment Application
+          example: 'To Be Assigned'
+        subSegment:
+          type: string
+          description: Sub-Segment or subset of connections
+          example: 'Broadcast & Streaming Media'
+        partnerMarketSegment:
+          type: string
+          description: groups based on the specific criteria and such as size, revenue etc
+          example: 'Network'
+        updatedBy:
+          type: string
+          description: who updated account
+          example: 'admin'
+        isReseller:
+          type: boolean
+          description: Flag to indicate if the account is reseller
+          example: true
+        resellerUId:
+          type: string
+          description: Legacy system Id of Reseller
+          example: '517911'
+        marketRegion:
+          $ref: '#/components/schemas/Region'
+        contractSignedDateTime:
+          type: string
+          format: date-time
+          description: Date contact was signed
+          example: '2020-07-01T00:00:00.00Z'
+        contractEndDateTime:
+          type: string
+          format: date-time
+          description: date of contract ends
+          example: '2020-07-01T00:00:00.00Z'
+        partnerType:
+          $ref: '#/components/schemas/PartnerType'
+        partnerSubType:
+          type: string
+          description: Detailed classification of Partner role
+          example: 'Technology Partner'
+        classification:
+          type: string
+          description: classification of account
+          example: 'Co-location'
+        category:
+          $ref: '#/components/schemas/Category'
+        operation:
+          type: string
+          description: relating to the routine functioning and activities of the party
+          example: 'Upsert'
+        homePage:
+          type: string
+          description: start up page
+          example: 'www.aljazeera.com'
+        integrationId:
+          type: string
+          description: Integration ID for Extended account Entity
+          example: '1703072960037'
+        customerFunctionalCurrency:
+          type: string
+          description: Customers functional currency (for the purpose of determining an embedded derivative).
+          example: 'USD'
+        customerSupportLevel:
+          type: string
+          description: The level of support provided to the customer.
+          example: 'PLATINUM'
+        esdRouting:
+          type: string
+          description: Identifier to route customer to necessary team.
+          example: 'Routing L3'
+        economicCurrency:
+          type: string
+          description: Specific currency used due to economic reasons (for the purpose of determining an embedded derivative).
+          example: 'USD'
+        exchangeName:
+          type: string
+          description: This attribute contains IBX Exchange name
+          example: 'EQX1000002546'
+        isIntellectualPropertyRight:
+          type: boolean
+          description: Indicates if the customer has restrictions around intellectual property rights.
+          example: true
+        eqxInvoiceDeliveryMethod:
+          type: string
+          description: Customer preference on invoices delivery.
+          example: 'Email'
+        invoiceFormat:
+          type: string
+          description: Identifies the format for which to deliver the invoice in.
+          example: 'PDF'
+        invoiceGroupBy:
+          type: string
+          description: Customer preference on invoices grouping
+          example: 'IBX'
+        invoiceSplitBy:
+          type: string
+          description: Customer preference on invoices split.
+          example: 'None'
+        invoiceLevel:
+          type: string
+          description: Value to determine if the customer will get a summary or detail invoice (Level of details).
+          example: 'Summary'
+        keyAccount:
+          type: string
+          description: Significant account for entity
+          example: '23532'
+        legalStatus:
+          type: string
+          description: The status defined by Law
+          example: 'GAM (3)'
+        legalStructureCode:
+          type: string
+          description: Business ownership structure
+          example: 'Corporation'
+        marketingPreScreenScore:
+          type: string
+          description: D&B Marketing Prescreen value for this company
+          example: '100'
+        isMarketPlace:
+          type: boolean
+          description: Indicates if the customer can be displayed in Market Place.
+          example: true
+        nonMarketableCompany:
+          type: string
+          description: Non-marketable company reason
+          example: 'Insufficient Data'
+        portalOrganizationIds:
+          type: array
+          items:
+            type: string
+          description: Unique identification number for portal organization
+          example:
+            - '32678'
+        portalOrganizationName:
+          type: string
+          description: Organization name customer creates in Portal.
+          example: 'AL JAZEERA MEDIA NETWORK'
+        preferredDocumentLanguage:
+          type: string
+          description: Indication for which language the customer wants their documents in. (Used for Quoting and Proposals in Persa)
+          example: 'English'
+        isPressRelease:
+          type: boolean
+          description: Indicates if we can mention the customer in a press release.
+          example: true
+        isPriceListing:
+          type: boolean
+          description: Indicates if we can mention the customer in a price listing, such as a customer list.
+          example: true
+        rank:
+          type: string
+          description: D&B Attribute - Provides the ranking of the organization associated with the Rank Type field.
+          example: 'Fortune'
+        specialHandlingNotes:
+          type: string
+          description: Description of any special things which need to be done for/with this account.
+          example: 'Note'
+        statementDeliveryMethod:
+          type: string
+          description: How a customer wants to receive their statements.
+          example: 'Email'
+        subsidiaryIndicator:
+          type: string
+          description: listing in order
+          example: '23'
+        substantialPartyCurrency:
+          type: string
+          description: The currency of the party that has substantial interest in the said party.
+          example: 'USD'
+        marketValue:
+          type: string
+          description: amount of asset analysed
+          example: '325623'
+        smartHandsBillingIncrement:
+          type: string
+          description: Number of minutes for incremental billing when different than standard.
+          example: '15'
+        accountAlumniDateTime:
+          type: string
+          format: date-time
+          description: Date account ending the relationship with Equinix.
+          example: '2020-07-01T00:00:00.00Z'
+        marketValueDateTime:
+          type: string
+          format: date-time
+          description: Date of market valuation
+          example: '2020-07-01T00:00:00.00Z'
+        isGamAccount:
+          type: boolean
+          description: Flag indicating if the account is managed globally.
+          example: true
+        isCustomerLocationConfidential:
+          type: boolean
+          description: Flag indicating that the customers location is confidential.
+          example: true
+        isNonMarketableCompany:
+          type: boolean
+          description: Flag indicating marketing company.
+          example: true
+        isSignatureRequired:
+          type: boolean
+          description: flag to indicate if signature is required
+          example: true
+        accountNumbers:
+          type: array
+          items:
+            type: string
+          description: Account number
+          example:
+            - '529528'
+        legalStructureDescription:
+          type: string
+          description: Legal Structure description
+          example: 'LLC Limited liability company'
+        isGsa:
+          type: boolean
+          description: Identifies accounts related to the US government
+          example: true
+        lastYearSales:
+          type: string
+          description: sales during last period of time
+          example: '1212'
+        domesticUltimateBusinessName:
+          type: string
+          description: Domestic Ultimate Business Name
+          example: 'AL JAZEERA GLOBAL HUB CO LIMITED'
+        employeeTotal:
+          type: string
+          description: D&B Attribute - Provides the total number of Employees at the organization represented by the account
+          example: '128'
+        firstExecutiveFirstName:
+          type: string
+          description: First Executive First Name
+          example: 'al'
+        firstExecutiveLastName:
+          type: string
+          description: First Executive Last Name
+          example: 'jazzera'
+        firstExecutiveMRC:
+          type: string
+          description: First Executive Management Responsibility Code
+          example: 'Head'
+        firstExecutiveSuffix:
+          type: string
+          description: First Executive Suffix
+          example: 'I'
+        firstExecutivePrefix:
+          type: string
+          description: First Executive Prefix
+          example: 'Mr'
+        firstExecutiveTitle:
+          type: string
+          description: First Executive Title
+          example: 'Founder'
+        globalUltimateBusinessName:
+          type: string
+          description: Global Ultimate Business Name
+          example: 'AL JAZEERA GLOBAL HUB CO LIMITED'
+        lineOfBusiness:
+          type: string
+          description: Line of Business
+          example: 'Television broadcasting stations, nsk'
+        majorIndustryCategory:
+          type: string
+          description: Industry category for entity
+          example: 'Billing'
+        secondExecutiveFirstName:
+          type: string
+          description: Second Executive First Name
+          example: 'al'
+        secondExecutiveLastName:
+          type: string
+          description: Second Executive Last Name
+          example: 'jazeera'
+        secondExecutiveMRC:
+          type: string
+          description: Second Executive Management Responsibility Code
+          example: 'Manager'
+        secondExecutiveMiddleInitial:
+          type: string
+          description: Second Executive Middle Initial
+          example: 'A. R.'
+        secondExecutivePrefix:
+          type: string
+          description: Second Executive Prefix
+          example: 'Mr'
+        secondExecutiveSuffix:
+          type: string
+          description: Second Executive Suffix
+          example: 'III'
+        secondExecutiveTitle:
+          type: string
+          description: Second Executive Title
+          example: 'President and CEO'
+        thirdExecutiveFirstName:
+          type: string
+          description: Third Executive First Name
+          example: 'Jill'
+        thirdExecutiveLastName:
+          type: string
+          description: Third Executive Last Name
+          example: 'Short'
+        thirdExecutiveMRC:
+          type: string
+          description: Third Executive Management Responsibility Code
+          example: 'Chief Executive Officer'
+        thirdExecutiveMiddleInitial:
+          type: string
+          description: Third Executive Middle Initial
+          example: 'Merle'
+        thirdExecutivePrefix:
+          type: string
+          description: Third Executive Prefix
+          example: 'Mr'
+        thirdExecutiveSuffix:
+          type: string
+          description: Third Executive Suffix
+          example: 'Jr'
+        thirdExecutiveTitle:
+          type: string
+          description: Third Executive Title
+          example: 'Manager'
+        firstExecutiveMiddleInitial:
+          type: string
+          description: First Executive Middle Initial
+          example: 'N'
+        parentHqDuns:
+          type: string
+          description: Parent Head quarter Duns name for entity
+          example: '219408343'
+        parentHqDunsName:
+          type: string
+          description: Parent Head quarter Duns name for entity
+          example: 'AL JAZEERA GLOBAL HUB CO LIMITED'
+        dnbMatchCount:
+          type: string
+          description: dnb match count for entity
+          example: '100'
+        dnbName:
+          type: string
+          description: dnb Name for entity
+          example: 'AL JAZEERA INTERNATIONAL LIMITED'
+        ownershipType:
+          type: string
+          description: Type of Ownership
+          example: 'owned'
+        marketValueCurrency:
+          type: string
+          description: currency for Value for asset
+          example: 'USD'
+        marketValueUnits:
+          type: string
+          description: Market value of this company
+          example: '10'
+        stockExchangeTickerName:
+          type: string
+          description: a unique name assigned to a security for trading purposes
+          example: 'AL ZA'
+        stockExchangeCountryISOCode:
+          type: string
+          description: unique number for country related to security for trading purposes
+          example: 'US'
+        rankType:
+          type: string
+          description: level of risk
+          example: '1'
+        isInternalAccount:
+          type: boolean
+          description: This would be used to mark an account as Internal Account
+          example: true
+        publishSystem:
+          type: string
+          description: Source system of Account
+          example: 'SFDC'
+        businessPartnerReference:
+          type: string
+          description: business partner for entity
+          example: '1'
+        uniqueAlias:
+          type: string
+          description: Unique Alias for entity
+          example: 'AL CORP'
+        regionServed:
+          type: string
+          description: serving region
+          example: 'Asia'
+        targetVerticalMarkets:
+          type: string
+          description: Sales Target Market Segment
+          example: 'Enterprise'
+        targetCustomerSize:
+          type: string
+          description: Revenue based Sales Target Customer size
+          example: '50'
+        eqxPortalReferenceNumber:
+          type: string
+          description: Unique identifier in ECP
+          example: 'IC-585958:4224'
+        isBillNotify:
+          type: boolean
+          description: Bill Notify for entity
+          example: true
+        ibx:
+          type: string
+          description: The IBX for the first asset
+          example: 'CH1'
+        resellerExperience:
+          type: string
+          description: Level of experience of reseller
+          example: 'old'
+        dnbStreetAddressLine:
+          type: string
+          description: D&B Street Address
+          example: '1 Knights bridge'
+        dnbPrimaryTownName:
+          type: string
+          description: D&B City
+          example: 'San Francisco'
+        dnbCountryISOAlpha2Code:
+          type: string
+          description: D&B Country Code
+          example: 'CA'
+        dnbTerritoryAbbreviatedName:
+          type: string
+          description: Territory Shortcut names
+          example: 'CA'
+        dnbPostalCode:
+          type: string
+          description: D&B Postal Code
+          example: '94115'
+        legacyAccountNumber:
+          type: string
+          description: The provided account identifier from the source system indicated.
+          example: '941151134'
+        localAccountName:
+          type: string
+          description: Account Name in local characters
+          example: 'AL JAZEERA'
+        novationStatus:
+          type: string
+          description: an agreement made between two parties to allow for substitution for an existing one
+          example: 'Novated'
+        novationDateTime:
+          type: string
+          format: date-time
+          description: Date of Novation
+          example: '2020-07-01T00:00:00.00Z'
+        extendedReferenceSource:
+          type: string
+          description: The system / acquisition from which we got the account
+          example: 'Alog'
+        extendedSourceReferenceId:
+          type: string
+          description: The system / acquisition from which we got the account
+          example: '1311'
+        isGsaDetails:
+          type: boolean
+          description: Type of GSA customer - Federal or State and Local
+          example: true
+        isDelete:
+          type: boolean
+          description: delete flag for entity
+          example: true
+        isChurnIndicator:
+          type: boolean
+          description: Churn Indicator is an indicator to sales team that indicate that a particular customer may leave equinix
+          example: true
+        territory:
+          type: string
+          description: that is incorporated under the laws of any US territory
+          example: 'GAM'
+        deInstallFees:
+          type: string
+          description: Uninstalled material fees
+          example: '100'
+        expediteFees:
+          type: string
+          description: fees to speed up
+          example: '100'
+        installationFees:
+          type: string
+          description: fees for installation
+          example: '100'
+        terminationFee:
+          type: string
+          description: fee for terminating
+          example: '100'
+        allFutureOrders:
+          type: string
+          description: all upcoming orders
+          example: 'Noted'
+        localAccountIdentifier:
+          type: string
+          description: a unique number for identification of local account
+          example: 'Brazil'
+        esdClassification:
+          type: string
+          description: esd classification for entity
+          example: 'Managed Services Only'
+        companyGroupName:
+          type: string
+          description: name of specified company group
+          example: 'Network'
+        isVd:
+          type: boolean
+          description: Volume Discount flag for entity
+          example: true
+        isLeasePerAccounting:
+          type: boolean
+          description: Is a process by which entities record the financial impact of agreements to rent
+          example: false
+        isMaskedAccount:
+          type: boolean
+          description: flag to indicate if the account is masked or not
+          example: false
+        suppressCharges:
+          type: string
+          description: Suppress charges for entity
+          example: '15'
+        salesEngineerLegacySourceId:
+          type: string
+          description: Legacy System Id of Sales Engineer of Account
+          example: '517911'
+        globalAccountTag:
+          type: string
+          description: tag for global account in entity
+          example: 'Accenture'
+        memo:
+          type: string
+          description: list or note for the entity
+          example: 'TEST MEMO 1397'
+        isInterCompany:
+          type: boolean
+          description: Intercompany for entity
+          example: true
+        isStreamlined:
+          type: boolean
+          description: streamlined for entity
+          example: true
+        competitor:
+          type: string
+          description: entity having publicly announced its intent to engage in the sale
+          example: 'Network'
+        clientServicesManagerLegacySourceId:
+          type: string
+          description: Legacy System Id Id of Client Services Manager of account
+          example: '517911'
+        commercialSolutionsLegacySourceId:
+          type: string
+          description: Legacy System Id ID of Commercial Solution person of account
+          example: '900'
+        countyCode:
+          type: string
+          description: country code for entity
+          example: 'US'
+        mcaCountry:
+          type: string
+          description: mca country for entity
+          example: 'US'
+        operatingUnitIbx:
+          type: string
+          description: Operating Unit IBX for entity
+          example: 'CH1'
+        primarySalesRepLegacySourceId:
+          type: string
+          description: Legacy System Id Id of Primary Sales Representative of account
+          example: '1298303'
+        salesAccountLegacySourceId:
+          type: string
+          description: Legacy System Id ID of Sales Support Associate
+          example: '183940'
+        salesSupportAssociateLegacySourceId:
+          type: string
+          description: sales Support associate Legacy System Id Id for entity
+          example: '38401'
+        source:
+          $ref: '#/components/schemas/Sources'
+        ultimateParentLegacySourceId:
+          type: string
+          description: ultimate parent for Legacy System Id
+          example: '4823'
+        isPublicListing:
+          type: boolean
+          description: Indicates if we can mention the customer in a public listing, such as a customer list.
+          example: true
+        accountFirstBecameCustomer:
+          type: string
+          format: date
+          description: Date when an account first became a customer
+          example: '2020-07-01'
+    EQXAccountCredit:
+      type: object
+      description: Extended Account Credit Entity to accommodate additional Equinix specific fields in Legacy System.
+      properties:
+        id:
+          type: string
+          description: Unique Identifier of Account Credit
+          example: 'I0001'
+        modId:
+          type: string
+          description: Account credit modId
+          example: 'type'
+        creditClassification:
+          type: string
+          description: Identifies accounts as defined by credit and collections team.
+          example: 'Low Risk'
+        creditHoldReason:
+          type: string
+          description: Holding a credit for pending payments
+          example: 'NO IBX ACCESS-NO EQUIP REMOVAL'
+        creditLimitCurrency:
+          type: string
+          description: currency for credit limit
+          example: 'USD'
+        creditLimitTolerance:
+          type: string
+          description: The % of a credit limit that is an acceptable variance over the limit.
+          example: '1'
+        isCreditMemoDelivery:
+          type: boolean
+          description: Is customer should receive credit memos delivery.
+          example: true
+        creditRating:
+          type: string
+          description: rating for transactions and payments
+          example: '1'
+        creditLimit:
+          type: string
+          description: The maximum amount of money that may be charged on an account
+          example: '1.46'
+    EQXAccountRevenue:
+      type: object
+      description: Extended Account Revenue Entity to accommodate additional Equinix specific fields in Legacy System.
+      properties:
+        id:
+          type: string
+          description: Unique Identifier of Account revenue
+          example: 'I0001'
+        revenueCurrency:
+          type: string
+          description: currency for revenue such as USD
+          example: 'USD'
+        revenueUnits:
+          type: string
+          description: units of currency
+          example: 'SingleUnits'
+        revenueType:
+          type: string
+          description: type of income turn over
+          example: 'USD'
+        turnOverGrowthRate:
+          type: string
+          description: growth rate of revenue
+          example: '12'
+        priorityGrowthRate:
+          type: string
+          description: priority growth rate of account revenue
+          example: '11'
+        revenueValue:
+          type: string
+          description: turnover income or profit value
+          example: '40018756'
+    EQXAccountAddress:
+      type: object
+      description: Extended Account Address Entity to accommodate additional Equinix specific fields in Legacy System. Unlike the flattened structure, this entity will accommodate multiple address types as an array.
+      properties:
+        id:
+          type: string
+          description: Unique Identifier of Account Address
+          example: 'AD001'
+        modId:
+          type: string
+          description: mod id for account address entity
+          example: 'Al-Jazeera'
+        addressId:
+          type: string
+          description: address id for account address entity
+          example: '1101'
+        integrationId:
+          type: string
+          description: integration id for account address entity
+          example: '2101'
+        addressType:
+          type: string
+          description: Indicates the type of address like Bill_To , Ship_To , Sold_To
+          enum:
+            - MAIN_ADDR
+            - SHIP_TO
+            - BILL_TO
+            - SOLD_TO
+          example: MAIN_ADDR
+        addressLine1:
+          type: string
+          description: Address Line 1
+          example: '1 KNIGHTS BRIDGE'
+        addressLine2:
+          type: string
+          description: Address Line 2
+          example: 'Second Floor'
+        addressLine3:
+          type: string
+          description: Address Line 3
+          example: '1569 Slot Blvd'
+        addressLine4:
+          type: string
+          description: Address Line 4
+          example: 'Suite 333'
+        city:
+          type: string
+          description: City of the address
+          example: 'San Francisco'
+        state:
+          type: string
+          description: ISO state or province code (from Address Doctor) - If US or CA, then put in the State Code otherwise Province
+          example: 'CA'
+        postalCode:
+          type: string
+          description: Postal code (zip) of the account's address
+          example: '94115'
+        county:
+          type: string
+          description: County name identifying regions within a country
+          example: 'Riverside County'
+        province:
+          type: string
+          description: ISO state or province code (from Address Doctor) - If US or CA, then put in the State Code otherwise Province
+          example: ' '
+        country:
+          type: string
+          description: Country Name
+          example: 'USA'
+        countryCode:
+          type: string
+          description: Country Code
+          example: 'US'
+        startDateTime:
+          type: string
+          format: date-time
+          description: Start Date of the account address
+          example: '2020-07-01T00:00:00.00Z'
+        endDateTime:
+          type: string
+          format: date-time
+          description: End Date of the account address
+          example: '2020-07-01T00:00:00.00Z'
+        latitude:
+          type: string
+          description: Latitude of the address
+          example: '-33.8568'
+        longitude:
+          type: string
+          description: Longitude of the address
+          example: '151.2153'
+        aiaLegacySourceIntegrationId:
+          type: string
+          description: aia legacy system integration id for account address entity
+          example: '785632'
+        eqxCountyCode:
+          type: string
+          description: County Code
+          example: '06037'
+        eqxLocalApartmentNumber:
+          type: string
+          description: Local Apartment Number of address
+          example: '23'
+        eqxHqAddress:
+          type: string
+          description: HQ Address of the account
+          example: 'P'
+        businessAddressEndDateTime:
+          type: string
+          format: date-time
+          description: business closing date
+          example: '2020-07-01T00:00:00.00Z'
+        eqxBillToAddress:
+          type: string
+          description: Billing Address of the Account
+          example: 'N'
+        eqxLegalNotice:
+          type: string
+          description: It indicates the address used for mailing any legal notices/documents
+          example: 'N'
+        eqxShipToAddress:
+          type: string
+          description: Ship To Address of the account
+          example: 'N'
+        eqxSoldToAddress:
+          type: string
+          description: Sold To Address of the account
+          example: 'N'
+        verifiedStatus:
+          type: string
+          description: verified status of address received from source after standardization/enrichment/validation of account address
+          example: 'Active'
+    EQXAccountAddressRequest:
+      type: object
+      description: Extended Account Address Entity to accommodate additional Equinix specific fields in Legacy System. Unlike the flattened structure, this entity will accommodate multiple address types as an array.
+      properties:
+        id:
+          type: string
+          description: Unique Identifier of Account Address
+          example: 'AD001'
+        modId:
+          type: string
+          description: mod id for account address entity
+          example: 'Al-Jazeera'
+        addressId:
+          type: string
+          description: address id for account address entity
+          example: '1101'
+        integrationId:
+          type: string
+          description: integration id for account address entity
+          example: '2101'
+        addressType:
+          type: string
+          description: Indicates the type of address like Bill_To , Ship_To , Sold_To
+          enum:
+            - MAIN_ADDR
+            - SHIP_TO
+            - BILL_TO
+            - SOLD_TO
+          example: MAIN_ADDR
+        addressLine1:
+          type: string
+          description: Address Line 1
+          example: '1 KNIGHTS BRIDGE'
+        addressLine2:
+          type: string
+          description: Address Line 2
+          example: 'Second Floor'
+        addressLine3:
+          type: string
+          description: Address Line 3
+          example: '1569 Slot Blvd'
+        addressLine4:
+          type: string
+          description: Address Line 4
+          example: 'Suite 333'
+        city:
+          type: string
+          description: City of the address
+          example: 'San Francisco'
+        state:
+          type: string
+          description: ISO state or province code (from Address Doctor) - If US or CA, then put in the State Code otherwise Province
+          example: 'CA'
+        postalCode:
+          type: string
+          description: Postal code (zip) of the account's address
+          example: '94115'
+        county:
+          type: string
+          description: County name identifying regions within a country
+          example: 'Riverside County'
+        province:
+          type: string
+          description: ISO state or province code (from Address Doctor) - If US or CA, then put in the State Code otherwise Province
+          example: ' '
+        country:
+          type: string
+          description: Country Name
+          example: 'USA'
+        countryCode:
+          $ref: '#/components/schemas/CountryCodes'
+        startDateTime:
+          type: string
+          format: date-time
+          description: Start Date of the account address
+          example: '2024-02-01T00:00:00.00Z'
+        endDateTime:
+          type: string
+          format: date-time
+          description: End Date of the account address
+          example: '2024-09-01T00:00:00.00Z'
+        latitude:
+          type: string
+          description: Latitude of the address
+          example: '-33.8568'
+        longitude:
+          type: string
+          description: Longitude of the address
+          example: '151.2153'
+        aiaLegacySourceIntegrationId:
+          type: string
+          description: aia legacy system integration id for account address entity
+          example: '785632'
+        eqxCountyCode:
+          type: string
+          description: County Code
+          example: '06037'
+        eqxLocalApartmentNumber:
+          type: string
+          description: Local Apartment Number of address
+          example: '23'
+        eqxHqAddress:
+          type: string
+          description: HQ Address of the account
+          example: 'P'
+        businessAddressEndDateTime:
+          type: string
+          format: date-time
+          description: business closing date
+          example: '2020-07-01T00:00:00.00Z'
+        eqxBillToAddress:
+          type: string
+          description: Billing Address of the Account
+          example: 'N'
+        eqxLegalNotice:
+          type: string
+          description: It indicates the address used for mailing any legal notices/documents
+          example: 'N'
+        eqxShipToAddress:
+          type: string
+          description: Ship To Address of the account
+          example: 'N'
+        eqxSoldToAddress:
+          type: string
+          description: Sold To Address of the account
+          example: 'N'
+        verifiedStatus:
+          type: string
+          description: verified status of address received from source after standardization/enrichment/validation of account address
+          example: 'Active'
+      required:
+        - countryCode
+    EQXPartyFirmography:
+      type: object
+      description: Party Firmography Details.
+      properties:
+        domesticUltimateDunsAddressLine:
+          type: string
+          description: Domestic Ultimate Duns Street Address
+          example: '1 KNIGHTS BRIDGE'
+        domesticUltimateDunsState:
+          type: string
+          description: Domestic Ultimate Duns state name
+          example: 'CALIFORNIA'
+        domesticUltimateDunsCity:
+          type: string
+          description: Domestic Ultimate Duns Town Name
+          example: 'SAN FRANCISCO'
+        domesticUltimateDunsCountryCode:
+          type: string
+          description: Domestic Ultimate Duns Country Code
+          example: 'US'
+        globalUltimateDunsCountryCode:
+          type: string
+          description: Global Ultimate Duns Country Code
+          example: 'US'
+        globalUltimateDunsPostalCode:
+          type: string
+          description: Global Ultimate Duns postal code
+          example: '90210'
+        hqDuns:
+          type: string
+          description: HQ Duns
+          example: 'PS001'
+        hqDunsPostalCode:
+          type: string
+          description: HQ Duns postal code
+          example: '94115'
+        domesticUltimateDunsPostalCode:
+          type: string
+          description: Domestic Ultimate Duns postal code
+          example: '94115'
+        globalUltimateDunsAddressLine:
+          type: string
+          description: Global Ultimate Duns Street Address
+          example: '1 KNIGHTS BRIDGE'
+        globalUltimateDunsState:
+          type: string
+          description: Global Ultimate Duns State Name
+          example: 'CALIFORNIA'
+        globalUltimateDunsCity:
+          type: string
+          description: Global Ultimate Duns Town Name
+          example: 'San Francisco'
+        naicsCode:
+          type: string
+          description: The details of a code identifying a standardized coding scheme that classifies business activities based on North American Industry Classification System
+          example: '399'
+        naicsDescription:
+          type: string
+          description: The details of the standardized coding scheme used to classify the business activities of an organization. This can be an externally recognized coding scheme as for instance North American Industry Classification System (NAICS)
+          example: 'North American Industry Classification System (NAICS)'
+        sicDnbCode:
+          type: string
+          description: The details of a code identifying a standardized coding scheme that classifies business activities based on Standard Industrial Classification
+          example: '399'
+        sicDnbCodeDescription:
+          type: string
+          description: The description of the business activities represented by the Industry Code as defined in the coding scheme identified by the Industry Code Type Description. For example, 'highway and street construction' is the description of industry code 1611 in the U.S. SIC 1987 system.
+          example: 'highway and street construction'
+        globalUltimateDunsNumberOfEmployees:
+          type: string
+          description: Global ultimate Duns total employee quantity
+          example: '128'
+        isGlobalUltimate:
+          type: boolean
+          description: Indicates whether the global ultimate of the entity has changed at 2 or more times in the last 12 months. If true, the global ultimate has changed at 2 or more times in the last 12 months. If false, the global ultimate has changed no more than once in the last 12 months.
+          example: true
+        isDomesticUltimate:
+          type: boolean
+          description: Is Domestic Ultimate
+          example: false
+        isBranchDivision:
+          type: boolean
+          description: Is Branch Division
+          example: true
+        isSubsidiary:
+          type: boolean
+          description: Is Subsidiary
+          example: false
+        annualRevenueCurrency:
+          type: string
+          description: The monetary amount the company makes during a given fiscal period from the sale of products and services. Annual revenue is total sales before any deductions for the cost of the inventory you sold or business expenses. (Local Currency)
+          example: 'USD'
+        annualRevenueNonUsd:
+          type: string
+          description: Currency of annual revenue
+          example: '16000000'
+        insideViewId:
+          type: string
+          description: inside view ID
+          example: '2824435'
+        inUltimateParentId:
+          type: string
+          description: Ultimate Parent ID
+          example: '12687'
+        inParentCompanyId:
+          type: string
+          description: Parent company ID
+          example: '34211'
+        inEnrichTime:
+          type: string
+          description: Enrichment Time
+          example: '2003'
+        inIndustry:
+          type: string
+          description: Top Level Industry
+          example: 'Corporate Services'
+        inIndustryCode:
+          type: string
+          description: Top Level Industry Code
+          example: 'Network'
+        inCompanyTaxId:
+          type: string
+          description: Company Tax Id
+          example: 'HAUBUN5678'
+        inCompanyStatus:
+          type: string
+          description: Company Status
+          example: 'Operating'
+        isAgent:
+          type: boolean
+          description: Indicates if the entity acts as an agent promoting the goods or services of another entity (e.g., Sales Agent, Purchasing Agent).If true, the entity acts as an agent.If false, the entity does not act as an agent.
+          example: true
+        bankName:
+          type: string
+          description: The name of the bank or a financial institution at which the entity has an account.
+          example: 'JPMorgan Chase'
+        county:
+          type: string
+          description: The name of the geographical area of a Country or Region for this address of the organization.Countries subdivide their geography into smaller sub divisions. County is an example of a commonly used subdivision, often found in the UK.
+          example: 'Riverside County'
+        isDunsSelfRequested:
+          type: boolean
+          description: When turned ON (Set to `true`), it indicates that the D-U-N-S Number for this subject was created at the request of the subject.When turned OFF (Set to `false`), it indicates that the D-U-N-S Number for this subject was not created at the request of the subject.; however as this is the assumed condition there is no requirement to create this tag to represent this fact.
+          example: false
+        isExporter:
+          type: boolean
+          description: Indicates if the entity is an exporter.If true, the entity exports a quantity of goods to other countries.If false, the entity does not export a quantity of goods to other countries.
+          example: false
+        isImporter:
+          type: boolean
+          description: Indicates if the entity is an importer.If true, the entity imports a quantity of goods from other countries.If false, the entity does not import a quantity of goods from other countries.
+          example: true
+        isRegisteredAddress:
+          type: boolean
+          description: Indicates if the address is the same as the organization's Registered Address if `true`, the primary/main address is the same as the organization's Registered Address. If `false`, the address is not the same as the organization's Registered Address.
+          example: true
+        isSmallBusinessIndicator:
+          type: boolean
+          description: Indicates if the business qualifies as small business, eligible for assistance from SBA, with a place of business located in the United States. It must operate primarily within the United States or make a significant contribution to the U.S. economy through payment of taxes or use of American products, materials or labor. Together with its affiliates, it must meet the numerical size standards as defined in the Small Business Size Regulations 13 CFR 121.If true, indicates that this is a small business.If false, indicates that this is not a small business
+          example: false
+        isStandAlone:
+          type: boolean
+          description: Indicates if the entity is a member of a legal family tree.If true, indicates that the entity is not a member of a legal family tree. This means it cannot play any family tree role and corporateLinkage will not be present.If false, indicates that the entity is a member of a legal family tree. The roles it plays is indicated by Family Tree Member Roles played.
+          example: true
+        isPhoneDisconnected:
+          type: boolean
+          description: Indicates whether the telephone number can be connected to successfully.If true, connection to the telephone number is unsuccessful.If false, connection to the telephone number is successful.
+          example: false
+        phoneIsdCode:
+          type: string
+          description: A series of numbers that must be prefixed before dialing a telephone number in another Country, it is comprised of an International Dialing Prefix followed by the Country Code. These are also referred to as Country Calling Code or Country Dial-In Code.
+          example: '080'
+        tradeStyleName:
+          type: string
+          description: The names the organization trades under for commercial purposes.A 'trading style' or 'trading as name' is a name a business chooses to use which is different from their registered company name.For example D&B is a trading style of Dun & Bradstreet Ltd. It is what the business chooses to call itself for marketing purposes.
+          example: 'D&B'
+        britishSicCode:
+          type: string
+          description: The 4-digit code in the U.K. SIC (Standard Industrial Classification) 1987 system assigned to an organization categorizing the primary business activities performed at its location. For example, 1611 represents the highway and street construction industry.
+          example: '1611'
+        britishSicDescription:
+          type: string
+          description: The description of the business activities represented by the Primary UK SIC Code. For example, 'highway and street construction' is the description of industry code 1611.
+          example: 'Business and domestic software development'
+        inParentNaics:
+          type: string
+          description: Industry that parent company involved
+          example: 'Privately owned'
+        inParentOwnership:
+          type: string
+          description: Parent NAICS
+          example: 'Privately owned'
+        inParentSIC:
+          type: string
+          description: Parent SIC
+          example: '1119'
+        inParentSubIndustry:
+          type: string
+          description: Parent Sub Industry
+          example: 'D&B'
+        inParentTopLevelIndustryCode:
+          type: string
+          description: Parent top level unique industry code
+          example: '415'
+        inParentSubIndustryCode:
+          type: string
+          description: Parent sub industry code
+          example: '1119'
+        inParentWebsite:
+          type: string
+          description: Parent Website
+          example: 'https://www.al.com'
+        ultimateParentWebsite:
+          type: string
+          description: Ultimate website url
+          example: 'https://www.al.com'
+        ultimateParentNaics:
+          type: string
+          description: Ultimate Parent NAICS
+          example: '716'
+        ultimateParentOwnership:
+          type: string
+          description: Ultimate Parent Ownership
+          example: '419'
+        ultimateParentSic:
+          type: string
+          description: Ultimate Parent SIC
+          example: '111'
+        ultimateParentSubIndustry:
+          type: string
+          description: Ultimate parent sub industry
+          example: 'D&B'
+        ultimateParentSubIndustryCode:
+          type: string
+          description: Ultimate parent sub industry Code
+          example: '312'
+        ultimateParentTicker:
+          type: string
+          description: Ultimate Parent Industry Ticker
+          example: '9684'
+        ultimateParentTopLevelIndustry:
+          type: string
+          description: Ultimate parent top level industry
+          example: 'Media'
+        ultimateParentTopLevelIndustryCode:
+          type: string
+          description: Ultimate parent top level industry Code
+          example: '415'
+        hqDunsNum:
+          type: string
+          description: Headquarters Duns Number
+          example: 'PS001'
+        hqDunsCountryCode:
+          type: string
+          description: Headquarters Duns Country Code
+          example: 'US'
+        hqDunsZip:
+          type: string
+          description: Headquarters Duns Postal Code
+          example: '94115'
+        hqDunsAddressLine:
+          type: string
+          description: Headquarters Duns address line
+          example: '201 California Street, San Francisco, CA 94111'
+        hqDunsState:
+          type: string
+          description: Headquarters Duns State Name
+          example: 'CALIFORNIA'
+        hqDunsCity:
+          type: string
+          description: Headquarters Duns Town Name
+          example: 'San Francisco'
+        isParentHq:
+          type: boolean
+          description: Is Parent Headquarters
+          example: false
+        mailingCountryName:
+          type: string
+          description: Mailing Country Name
+          example: 'United States'
+        mailingCountryCode:
+          type: string
+          description: Mailing Country Code
+          example: 'US'
+        mailingZip:
+          type: string
+          description: Mailing Postal Code
+          example: '94115'
+        mailingAddressLine1:
+          type: string
+          description: Mailing Street
+          example: '201 California Street'
+        mailingAddressLine2:
+          type: string
+          description: Mailing Street 2
+          example: 'San Francisco, CA 94111'
+        mailingStateCode:
+          type: string
+          description: Mailing Territory Abbreviation
+          example: 'CA'
+        mailingState:
+          type: string
+          description: Mailing Territory Name
+          example: 'CALIFORNIA'
+        mailingCity:
+          type: string
+          description: Mailing Town Name
+          example: 'San Francisco'
+        parentCountry:
+          type: string
+          description: Parent Country Code
+          example: 'USA'
+        parentZip:
+          type: string
+          description: Parent Postal Code
+          example: '94102'
+        parentAddressLine:
+          type: string
+          description: Parent Street Address
+          example: '201 California Street, San Francisco, CA 94111'
+        parentState:
+          type: string
+          description: Parent Territory Name
+          example: 'CALIFORNIA'
+        parentCity:
+          type: string
+          description: Parent Town Name
+          example: 'SAN FRANCISCO'
+        blogUrl:
+          type: string
+          description: Company Blog Profile
+          example: 'http://www.al-corporation.com/blog/feed/'
+        facebookUrl:
+          type: string
+          description: Company Facebook Profile
+          example: 'https://www.facebook.com/company/al-corporation'
+        linkedinUrl:
+          type: string
+          description: Company Linkedin Profile
+          example: 'https://www.linkedin.com/company/al-corporation'
+        twitterUrl:
+          type: string
+          description: Company Twitter Profile
+          example: 'https://www.twitter.com/company/al-corporation'
+        companySource:
+          type: string
+          description: Company Source
+          example: 'Web References'
+        companyDescription:
+          type: string
+          description: Company description
+          example: 'Broadcasting'
+        equifaxId:
+          type: string
+          description: EFX ID (Equifax ID)
+          example: '23790EQF'
+        employeeRange:
+          type: string
+          description: Employee Range
+          example: '200 to <500'
+        revenueRange:
+          type: string
+          description: Revenue Range
+          example: '1 - 10M'
+        subIndustry:
+          type: string
+          description: Sub Industry
+          example: 'Mobile Application Developers'
+        subIndustryCode:
+          type: string
+          description: Sub industry Code
+          example: '518210'
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      name: apiKey
+      in: header

@@ -1,0 +1,37 @@
+{
+    "data": [
+        {
+            "contactFirstName": "",
+            "contactLastName": "",
+            "partyElectronicAddress": [
+                {
+                    "electronicAddressType": "WORK_EMAIL",
+                    "electronicAddress": "garyisaacs@directwines.co.uk"
+                }
+            ],
+            "partyPhoneCommunications": [
+                {
+                    "phoneType": "CELL",
+                    "phoneNumber": "8363-9480"
+                },
+                {
+                    "phoneType": "WORK_PHONE",
+                    "phoneNumber": "4401189031416"
+                }
+            ],
+            "contactStatus": true,
+            "partyUId": "D4EF5F29-3B46-4812-BE1F-91EEAC311DD5",
+            "contactSourceId": "CNTC1243955252",
+            "contactRelatedAccounts": [
+                {
+                    "accountPartyUId": "91EEAC311DD5-D4EF5F29-3B46",
+                    "accountRoles": [
+                        {
+                            "role": "CSM"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

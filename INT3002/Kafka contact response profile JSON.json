@@ -1,0 +1,18 @@
+{
+    "task": {
+        "id": "c85c08bc-ce18-4c60-8149-d9ca6c9b40af",
+        "source": "fd1d5000-503b-11e9-a153-515d09941234",
+        "version": "1.0",
+        "domain": "Account",
+        "status": "Create",
+        "creationTimeUTC": "2020-05-21T02:08:11.471Z",
+        "body": {
+            "eqxSourceId": "OPER1006679597",
+            "partyAccountName": "AccountNameTest2",
+            "accountCategory": "type",
+            "externalSystemName": "EBS",
+            "externalSystemId": "Testing"
+        }
+    },
+    "signature": "<Customer_Signature>"
+}

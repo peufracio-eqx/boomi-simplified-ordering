@@ -1,0 +1,16 @@
+{
+    "u_first_name": "Pablo",
+    "u_last_name": "Escobar",
+    "u_email": "test.contact@equinix.com",
+    "u_mobile_phone": "3693125112",
+    "u_phone": "0010023",
+    "u_active": true,
+    "u_sn_tmt_core_external_id": "CNTC3693140",
+    "u_x_equi2_cust_cont_mdm_id": "",
+    "u_x_equi2_cust_t_contact_role": [
+        "CUSTOMER"
+    ],
+    "u_account": [
+        "EX1000010"
+    ]
+}

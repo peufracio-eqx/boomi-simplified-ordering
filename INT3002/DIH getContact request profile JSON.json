@@ -1,0 +1,11 @@
+{
+    "search": {
+        "partyContact": {
+            "contactSourceId": "OPER112006679200"
+        }
+    },
+    "pagination": {
+        "offset": 1,
+        "limit": 2
+    }
+}

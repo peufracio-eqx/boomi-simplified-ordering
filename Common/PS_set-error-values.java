@@ -20,9 +20,13 @@ try{
         ExecutionUtil.setDynamicProcessProperty("DPP_ErrorMessage", errMsg, false);
     }
     if(!errCode){
-        if(errMsg.indexOf("Code 502: Bad Gateway") > 0){
+        if(errMsg.toUpperCase().indexOf("CODE 502: BAD GATEWAY") > 0){
             errCode = "502";
-        }else{
+        }
+		else if(errMsg.toUpperCase().indexOf("TIMED") > 0){
+			errCode = "408";
+		}
+		else{
             errCode = "400";
         }
         ExecutionUtil.setDynamicProcessProperty("DPP_ErrorCode", errCode, false);

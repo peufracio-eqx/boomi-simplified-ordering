@@ -1,0 +1,15 @@
+{
+    "import_set": "ISET0093678",
+    "staging_table": "x_equi2_cust_cont_customer_contact",
+    "result": [
+        {
+            "transform_map": "Customer Contact",
+            "table": "customer_contact",
+            "display_name": "name",
+            "display_value": "Daniel Conatct",
+            "record_link": "https://dev-esh.equinix.com/api/now/table/customer_contact/d7107a8b87910210edf5db573cbb35ba",
+            "status": "inserted",
+            "sys_id": "d7107a8b87910210edf5db573cbb35ba"
+        }
+    ]
+}

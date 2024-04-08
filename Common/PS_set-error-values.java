@@ -14,6 +14,9 @@ try{
     if(!errMsg){
         if (!errCustomMsg){
             errMsg = "Unknown Error";
+            if(errCode=="200"){
+                errMsg = "NO DATA";
+            }
         }else{
             errMsg = errCustomMsg;
         }
@@ -25,6 +28,9 @@ try{
         }
 		else if(errMsg.toUpperCase().indexOf("TIMED") > 0){
 			errCode = "408";
+		}
+		else if(errMsg.toUpperCase().indexOf("ACCESS TOKEN FAILED") > 0){
+			errCode = "401";
 		}
 		else{
             errCode = "400";

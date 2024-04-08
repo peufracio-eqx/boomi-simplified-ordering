@@ -15,7 +15,7 @@ for( int i = 0; i < dataContext.getDataCount(); i++ ) {
     //logger.info("newDataText-->"+newDataText);
 
     def jsonObject = new JsonSlurper().parse(dataContext.getStream(i));
-    def bizRefvalue, SourceID, AccountName, SystemName, errCode, errMsg;
+    def bizRefvalue = "", SourceID = "", AccountName = "", SystemName = "", errCode = "", errMsg = "";
     def validMsg = "N";
 
     try {

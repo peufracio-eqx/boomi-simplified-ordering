@@ -1,0 +1,15 @@
+{
+    "eventId": "6fc2f6e5-5bdb-4335-9c2f-0f8a7ab6156e",
+    "eventTime": "2023-04-07T12:38:15.723442+08:00",
+    "operation": "Update",
+    "events": [
+        {
+            "objectKey": "SV5",
+            "objectType": "IBXKB-IBXDetails",
+            "object": {
+                "ibx": "SV5",
+                "region": "AMER"
+            }
+        }
+    ]
+}

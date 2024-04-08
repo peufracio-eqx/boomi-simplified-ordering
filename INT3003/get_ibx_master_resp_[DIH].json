@@ -1,0 +1,30 @@
+{
+    "data": [
+        {
+            "ibx": "TY1",
+            "displayName": "TY1",
+            "status": "Open",
+            "ibxType": "IBX",
+            "localCurrency": "AUD",
+            "locationOrientation": "3.2 km / 2 mi away from Haneda Intl Airport ( HND)",
+            "latitude": "35.585615",
+            "longitude": "139.740142",
+            "address": [
+                {
+                    "line1": "1-2-4 Shanghai",
+                    "line2": "TRC - C Building, B Block 4F",
+                    "line3": "-",
+                    "city": "Brisbane",
+                    "country": "Australia",
+                    "countryCode": "AU",
+                    "postalCode": "560103",
+                    "stateOrProvince": "Hong Kong SAR"
+                }
+            ],
+            "region": "APAC",
+            "subRegion": "Oceana/Pacific",
+            "metroCode": "AE",
+            "metroName": "Adelaide"
+        }
+    ]
+}
